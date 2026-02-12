@@ -1,0 +1,138 @@
+(Instruction for the LLM: generate all dialogue in **English**. Alex is the journalist/moderator. Alex must call the experts **by name** when handing over or asking follow-ups. Alex should let an expert finish, briefly rephrase, then ask the other expert — or the same expert if needed.)
+
+---
+
+### 1. Context setting + reference for the paper
+
+**Alex**
+
+Podcast-style intro. For example:
+
+* “Hello and welcome to **Arxiv LLM Daily EN**.”
+* “This is the show where we look at a new arXiv paper every day and try to keep up with the ridiculous speed of AI innovation — but in a way that stays practical.”
+* “Today we’re going to dig into a paper and see what it actually changes for people building or using AI.”
+
+Then:
+
+1. Give the reference:
+
+   * Title of the paper
+   * (optionally) date / version
+   * e.g. “The paper we’re looking at today is…”
+2. Explain why we’re talking about it now: “this paper proposes…”
+3. Present the two angles, **by name**:
+
+   * “Marc will look at it from the field, real-world usage.”
+   * “Jamie will look at the AI / technical side.”
+4. Value question:
+
+   > “Concretely, what’s the use of what they’re proposing, and what need does it meet today?”
+
+Then hand over **by name**:
+
+* “Marc, let’s start with what need you’re actually seeing on the ground.”
+* After Marc speaks, Alex rephrases and calls Jamie: “Jamie, from the AI side, why is this kind of approach showing up now?”
+
+**Marc**
+
+* Describe the real need it could address.
+
+**Jamie**
+
+* Reframe from the AI side (why this approach is appearing now).
+
+---
+
+### 2. What is the paper actually proposing?
+
+**Jamie**
+
+* Describe the contribution: what it is, where it plugs in, what it’s for.
+* Position it compared to what was done before.
+
+**Alex**
+
+* Rephrase in everyday English.
+* Then call **Marc** by name.
+
+**Marc**
+
+* Say what it would change in actual usage.
+
+---
+
+### 3. Use cases (practical projection of the paper)
+
+**Alex**
+
+* Transition: “If we applied it in a real team, Marc, what would it look like?”
+
+**Use case 1 – simple**
+
+* **Marc** gives a very operational case.
+
+(After Marc, Alex rephrases and sets up the second case.)
+
+**Use case 2 – more advanced**
+
+* **Marc** describes, **Jamie** connects it to the mechanics of the paper.
+
+**Alex**
+
+* Keeps the thread and hands speaking time back around **by name**.
+
+---
+
+### 4. Under the hood / limitations (according to the paper)
+
+**Jamie**
+
+* Explain prerequisites, assumptions, technical constraints, limitations mentioned by the authors.
+* Possible future work.
+
+**Alex**
+
+* Translate that into simple terms.
+* Then call **Marc** by name.
+
+**Marc**
+
+* Add the setup / org part.
+
+---
+
+### 5. Results mentioned in the arXiv paper
+
+**Jamie**
+
+* Recap the reported results:
+
+  * benchmarks / datasets,
+  * metrics (EM, F1, faithfulness, cost, latency…),
+  * comparison to baselines.
+* Specify if the setting is very controlled.
+
+**Alex**
+
+* Translate these numbers into understandable benefits.
+* Then call **Marc** by name.
+
+**Marc**
+
+* Say what we can expect in a real environment (often a bit worse).
+
+---
+
+### 6. Conclusion
+
+**Marc**
+
+* Closing remark from the field: who benefits the most / under what conditions.
+
+**Alex**
+
+* Final conclusion: what the paper really brings in one sentence
+
+The output must be the complete dialogue in **English**, respecting the order, the roles, and the names.
+
+**IMPORTANT: after Alex’s conclusion, have her say: "To finish, a quick reminder: the English version of the podcast is available via the RSS feed on nblotti dot org slash i a daily slash en, and also on Spotify — search for Arxiv LLM Daily EN. See you tomorrow for more AI news. Have a great day." Do not ever change any word in that last sentence (no adding https to the url) and do not generate anything else after it.**
