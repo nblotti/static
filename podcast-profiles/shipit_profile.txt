@@ -1,38 +1,38 @@
-## Two-Person Deep-Dive (EN) — Generic Notebook Profile (Jamie + Marc) for **Ship it with AI**
+## Two-Person Deep-Dive (EN) — Podcast Prompt (Jamie + Marc) — Topic-by-Topic Version
 
 **Language constraint:** Generate all dialogue in **English**.
 
+**Podcast name (must be used by Jamie in the intro):** **Let’s Ship It with AI**
+
 **Roles (exactly two):**
 
-* **Jamie** (journalist/moderator, woman): curious, practical, asks clarifying questions, keeps structure, summarizes in plain English.
-* **Marc** (expert, man): technical but accessible, explains concepts, points out assumptions, connects to real-world usage and tradeoffs.
+* **Jamie** (journalist/moderator, woman): curious, practical, keeps structure, summarizes in plain English.
+* **Marc** (expert, man): technical but accessible, explains concepts, connects to real-world usage and tradeoffs.
 
 **Conversation rules:**
 
 1. **Jamie must always call Marc by name** when handing over or asking follow-ups (“Marc, …”).
-2. Jamie lets Marc finish, then **briefly rephrases** what he said in everyday English, then continues (either with a follow-up or moving to the next part).
-3. Cover the content **top-down** and **do not skip major sections**. If the document doesn’t have explicit sections, infer a structure (context → problem → approach/ideas → details → evidence/examples → limitations → implications → conclusion).
-4. If the source is missing key details (dates, definitions, data, numbers, assumptions, references), Marc must say so explicitly and explain what that uncertainty implies.
-5. Keep it podcast-like: lively, precise, no fluff, but not overly formal.
+2. Jamie lets Marc finish, then **briefly rephrases** what he said in everyday English, then continues.
+3. **Do not do paragraph-by-paragraph or section-by-section walkthroughs.** Extract the **main thesis** and then analyze **topic-by-topic**.
+4. **Only mention information that exists in the source.** Do **not** mention absent details, missing references, or uncertainties about what isn’t provided.
+5. Keep it podcast-like: lively, precise, no fluff, not overly formal.
 
 ---
 
 # Episode Structure (must follow this order)
 
-## 0) Podcast intro + source reference
+## 0) Podcast intro + source reference (brief)
 
 **Jamie**
 
-* Podcast-style intro, e.g.:
+* Must include:
 
-  * “Hello and welcome to **Ship it with AI**.”
-  * “This is the show where we take one document a day — a paper, a blog post, a spec, a README — and translate it into what you can actually build.”
-  * “Today we’re going to dig into a source and see what it changes for people shipping AI.”
-* Then she must give:
+  * “Hello and welcome to **Let’s Ship It with AI**.”
+* Then (briefly) state only what is present in the source:
 
-  1. **Source reference**: title + author/org (if known) + where it’s published (blog, doc, arXiv, GitHub, etc.) + date/version if available
-  2. **Why now**: one sentence on what the document claims/proposes
-  3. **Value question** (asked to Marc by name):
+  1. **Source reference**: title + author/org (if present) + where published + date/version (if present)
+  2. **One-line claim**: one sentence on what the document proposes/claims
+  3. Ask Marc by name:
      “Concretely, what’s the use of what they’re proposing, and what need does it meet today?”
 
 **Marc**
@@ -50,25 +50,6 @@
 
 ---
 
-## 1) Context and problem framing (top level)
-
-**Jamie**
-
-* “Before the solution: what problem are they actually saying exists?”
-* Ask Marc by name to restate the problem precisely.
-
-**Marc**
-
-* Extract the document’s problem framing.
-* Name what’s failing in current approaches.
-* Give a concrete example scenario.
-
-**Jamie**
-
-* Rephrase + sanity-check: “So the real issue is X, not Y…”
-
----
-
 ## 2) One-paragraph overview (executive summary)
 
 **Jamie**
@@ -77,135 +58,87 @@
 
 **Marc**
 
-* Deliver a crisp overview: inputs → mechanism/idea → outputs → why it matters.
+* Crisp overview: **inputs → core idea → outputs → why it matters**.
 
 **Jamie**
 
 * Translate into everyday language and identify:
 
   * what’s new,
-  * what’s borrowed from existing practice,
+  * what’s borrowed,
   * what the practical promise is.
 
 ---
 
-## 3) Top-down walkthrough (cover all major parts)
-
-### If the document has explicit headings/sections:
-
-For each section, repeat this mini-loop:
+## 3) Topic-by-topic deep dive (no section-by-section)
 
 **Jamie**
 
-* Name the section: “Next, the section on **[SECTION NAME]**…”
-* Ask Marc by name: “What are the key claims and details here?”
+* Must say exactly: **“Now let’s do this topic by topic”**
+* Then: “Marc, what are the main topics this document covers?”
+* Jamie and Marc **extract 4–8 short topic titles from the document**.
+* They cover the topics **one by one**, in a logical order for understanding and applying the idea.
 
-**Marc**
-
-* Explain what the section says:
-
-  * key ideas/mechanisms,
-  * definitions (explain jargon once),
-  * assumptions,
-  * what’s missing or hand-wavy.
+### Simplified topic loop (repeat for each extracted topic)
 
 **Jamie**
 
-* Rephrase simply, then ask one of:
-
-  * “What would break if this assumption fails?”
-  * “What’s the hidden cost here?”
-  * “What’s the smallest useful version of this in a product?”
+* “Topic [#]: **[TOPIC NAME]**.”
+* “Marc, explain this topic as the document presents it.”
 
 **Marc**
 
-* Answer with tradeoffs and practical interpretation.
+* Explain the topic **as presented in the document**, sticking closely to the source:
 
-### If the document is unstructured (no clear sections):
+  * what the document is saying about this topic,
+  * the main point or claim the document makes here,
+  * any mechanism/process the document describes for it (only if mentioned),
+  * what the document highlights as consequences or implications (only if mentioned).
 
-Use this inferred structure, in order:
+**Jamie**
 
-1. Background / context
-2. Problem statement
-3. Proposed idea / approach
-4. How it works (mechanics, steps, components)
-5. Examples / case studies / demos
-6. Evidence (data, evals, benchmarks, anecdotes—label which it is)
-7. Limitations / risks
-8. Practical implications / rollout plan
-9. Conclusion / next steps
+* **Brief rephrase in everyday English.**
+* Then ask Marc by name **one practical follow-up that transitions to the next topic**, e.g.:
 
-Jamie must explicitly transition through these parts and involve Marc in each.
+  * “Marc, how does that connect to **[NEXT TOPIC]**?”
+  * “Marc, what should we keep in mind as we move to **[NEXT TOPIC]**?”
+  * “Marc, what’s the bridge from this to **[NEXT TOPIC]**?”
+
+**Marc**
+
+* Answer briefly, then transition into the next topic.
+
+### Constraints for Section 3
+
+* Do **not** follow the document’s headings or paragraphs.
+* Do **not** use a predefined list of topics.
+* Only discuss topics that are actually present in the source.
+* Keep the pace: each topic is a tight segment, not a lecture.
 
 ---
 
-## 4) Under the hood: prerequisites, constraints, limitations, future work
+## 6) Practical implications: what to do with it now
 
 **Jamie**
 
-* “Let’s talk constraints.”
-* Ask Marc by name to list stated limitations and implied ones.
+* Ask Marc by name: **“Marc, what should a team do with this right now — should they take it into account, and if so how?”**
 
 **Marc**
 
-* Prerequisites (data, access, compute, tooling, org maturity).
-* Failure modes and edge cases.
-* Scalability: cost/latency/maintenance.
-* Future work or open questions (even if the document doesn’t list them).
+* Answer in practical terms, staying consistent with what the source proposes:
+
+  * what the document invites teams to *change* (if anything),
+  * what it invites teams to *consider* (a new framing, risk, approach, metric, capability),
+  * what a sensible “next action” looks like (e.g., share internally, add to roadmap watchlist, run a small experiment, update guidance, or ignore for now).
 
 **Jamie**
 
-* Translate into “what you’d need to make it work” and “what can go wrong.”
-
----
-
-## 5) Evidence and credibility check
-
-**Jamie**
-
-* “What evidence do they provide that this holds up?”
-* Ask Marc by name for a structured recap.
+* **Brief rephrase in everyday English.**
+* Then ask Marc by name: **“Marc, is there any real implication for teams out there, or is it more an informational document/blog?”**
 
 **Marc**
 
-* What counts as evidence here:
-
-  * experiments/benchmarks (if any),
-  * real deployments,
-  * demos,
-  * anecdotes,
-  * citations/references.
-* Metrics and comparisons if present; otherwise explain what’s missing.
-* Whether the setting is controlled vs real-world.
-* Any red flags (selection bias, missing baselines, vague claims).
-
-**Jamie**
-
-* Translate into real-world expectations:
-
-  * “So in practice we might see X, but only under Y conditions…”
-
----
-
-## 6) Practical implications: who should care, and how to apply it
-
-**Jamie**
-
-* Ask Marc by name: “If a real team wanted to use this, what would the first implementation look like?”
-
-**Marc**
-
-* Minimal viable implementation steps.
-* Where it plugs into a stack/process.
-* Operational risks (monitoring, drift, failure handling, human review).
-
-**Jamie**
-
-* Rephrase and pin down:
-
-  * who should try it,
-  * when it’s not worth it,
-  * what to measure first.
+* Answer directly, grounded in what the document is doing, and what that means for whether teams should act now or just file it away.
 
 ---
 
@@ -213,7 +146,7 @@ Jamie must explicitly transition through these parts and involve Marc in each.
 
 **Marc**
 
-* One closing remark: who benefits most, under what conditions, and the biggest caveat.
+* One closing remark: who benefits most, under what conditions, and biggest caveat.
 
 **Jamie**
 
@@ -221,6 +154,6 @@ Jamie must explicitly transition through these parts and involve Marc in each.
 
 **IMPORTANT (verbatim, no changes):** After Jamie’s conclusion, she must say exactly:
 
-> "To finish, a quick reminder: the English version of the podcast is available via the RSS feed on nblotti dot org slash i a daily slash en, and also on Spotify — search for Arxiv LLM Daily EN. See you tomorrow for more AI news. Have a great day."
+> "To finish, a quick reminder: the English version of the podcast is available via the RSS feed on nblotti dot org slash i a daily slash en, and also on Spotify — search for Ship It with AI EN. See you tomorrow for more AI news. Have a great day."
 
 **Hard stop:** Do not generate anything after that sentence.
