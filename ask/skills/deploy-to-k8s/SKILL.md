@@ -1,0 +1,78 @@
+---
+name: deploy-to-k8s
+description: Deploy, update, and manage applications on the Kubernetes cluster. Use this whenever you need to create deployments, services, ingresses, or update running workloads. Use kubectl (NOT microk8s kubectl).
+---
+# Deploy to Kubernetes
+
+## ALWAYS
+- Use `kubectl` -- it is pre-configured with kubeconfig at `/root/.kube/config`.
+- Use `localhost:32000/<image>:<tag>` for image references in manifests (node containerd trusts it).
+- After updating a deployment image, run `kubectl rollout status` to verify it succeeded.
+- Use namespaces to isolate applications.
+- For HTTPS ingresses, use the `letsencrypt-prod` ClusterIssuer with cert-manager annotation.
+
+## NEVER
+- Do NOT use `microk8s kubectl` -- it does not exist in the sandbox. Use plain `kubectl`.
+- Do NOT use `microk8s enable` or any microk8s-specific commands.
+- Do NOT assume port 80 or 443 -- check the application's actual port.
+
+## Common operations
+
+### Create a namespace
+```bash
+kubectl create namespace <app-name>
+```
+
+### Apply a manifest
+```bash
+kubectl apply -f k8s.yaml
+```
+
+### Update a deployment image
+```bash
+kubectl set image deployment/<name> <container>=localhost:32000/<image>:<tag> -n <namespace>
+kubectl rollout restart deployment/<name> -n <namespace>
+kubectl rollout status deployment/<name> -n <namespace> --timeout=120s
+```
+
+### Expose with Ingress + TLS (Let's Encrypt)
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: <app-name>
+  namespace: <namespace>
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - <app>.nblotti.org
+      secretName: <app>-tls
+  rules:
+    - host: <app>.nblotti.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: <app-name>
+                port:
+                  number: 80
+```
+
+### Inspect resources
+```bash
+kubectl get all -n <namespace>
+kubectl describe deployment <name> -n <namespace>
+kubectl logs deployment/<name> -n <namespace> --tail=50
+```
+
+### Exec into a running pod (to inspect files, debug, etc.)
+```bash
+kubectl exec -n <namespace> deploy/<name> -- ls /app
+kubectl exec -n <namespace> deploy/<name> -- cat /app/config.py
+```
+**IMPORTANT**: `ls`, `glob`, `grep`, `read_file` tools operate on YOUR sandbox filesystem, not other pods. To see files inside another pod, always use `kubectl exec` via the `execute` tool.
