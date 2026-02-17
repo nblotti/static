@@ -33,8 +33,27 @@ kubectl apply -f k8s.yaml
 ```bash
 kubectl set image deployment/<name> <container>=localhost:32000/<image>:<tag> -n <namespace>
 kubectl rollout restart deployment/<name> -n <namespace>
-kubectl rollout status deployment/<name> -n <namespace> --timeout=120s
 ```
+Then use **early crash detection** (see below) instead of a blind rollout wait.
+
+## Early crash detection (after deploy)
+
+Do NOT just run `kubectl rollout status --timeout=120s` and wait blindly. Instead:
+
+```bash
+# After applying manifests, wait 15s then check pod state
+sleep 15
+kubectl get pods -n <namespace> -l app=<app> -o wide
+
+# If any pod shows CrashLoopBackOff or Error, check logs immediately:
+kubectl logs -n <namespace> -l app=<app> --tail=30
+
+# Only wait for full rollout if pods are Running/ContainerCreating
+kubectl rollout status deployment/<name> -n <namespace> --timeout=90s
+```
+
+This catches crash-loops in ~15s instead of waiting 2+ minutes for a timeout.
+If the pod is crash-looping, read the logs, fix the issue, rebuild, and redeploy.
 
 ### Expose with Ingress + TLS (Let's Encrypt)
 ```yaml

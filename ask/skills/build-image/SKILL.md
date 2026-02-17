@@ -30,14 +30,48 @@ docker info  # verify daemon is running
 # 2. Build the image
 docker build -t 192.168.1.7:32000/<image-name>:<tag> .
 
-# 3. Push to registry
-docker push 192.168.1.7:32000/<image-name>:<tag>
+# 3. LOCAL SMOKE TEST (mandatory — see below)
+docker run -d --name smoke-test -p 9999:<APP_PORT> 192.168.1.7:32000/<image-name>:<tag>
+sleep 5
+docker ps --filter name=smoke-test --format '{{.Status}}'
+docker logs smoke-test
+# If crashed → fix and rebuild BEFORE pushing
+docker rm -f smoke-test
 
-# 4. Deploy to Kubernetes (if needed)
-kubectl set image deployment/<name> <container>=localhost:32000/<image-name>:<tag> -n <namespace>
-kubectl rollout restart deployment/<name> -n <namespace>
-kubectl rollout status deployment/<name> -n <namespace> --timeout=120s
+# 4. Push to registry (only after smoke test passes)
+docker push 192.168.1.7:32000/<image-name>:<tag>
 ```
+
+## Validate before push (MANDATORY)
+
+After building, ALWAYS test the image locally before pushing:
+
+```bash
+# Run the container locally
+docker run -d --name smoke-test -p 9999:<APP_PORT> <image>
+sleep 5
+
+# Check if still running (exit code 0 = running, 1 = crashed)
+docker ps --filter name=smoke-test --format '{{.Status}}'
+
+# Check logs for errors
+docker logs smoke-test
+
+# If it is running, optionally verify with curl:
+curl -s http://localhost:9999/ || true
+
+# Clean up
+docker rm -f smoke-test
+```
+
+If the container crashes or logs show import errors / exceptions:
+- Fix the issue (e.g. add missing dependency to requirements.txt)
+- Rebuild the image
+- Re-run the smoke test
+- Only push after the local test passes
+
+**This catches missing dependencies, wrong ports, and config errors in seconds
+instead of waiting 2-3 minutes for a K8s rollout timeout.**
 
 ## Registry details
 - Sandbox to registry: `192.168.1.7:32000` (plain HTTP, insecure, pre-configured in `/etc/docker/daemon.json`)
