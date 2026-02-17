@@ -9,12 +9,13 @@ description: Deploy, update, and manage applications on the Kubernetes cluster. 
 - Use `localhost:32000/<image>:<tag>` for image references in manifests (node containerd trusts it).
 - After updating a deployment image, run `kubectl rollout status` to verify it succeeded.
 - Use namespaces to isolate applications.
-- For HTTPS ingresses, use the `letsencrypt-prod` ClusterIssuer with cert-manager annotation.
+- **ALL web applications MUST use HTTPS** via Ingress with TLS. The cluster has cert-manager installed with a `letsencrypt-prod` ClusterIssuer. Always add the annotation `cert-manager.io/cluster-issuer: letsencrypt-prod` and a `tls` section to every Ingress. DNS is externally managed -- domain pattern is `<app>.nblotti.org`.
 
 ## NEVER
 - Do NOT use `microk8s kubectl` -- it does not exist in the sandbox. Use plain `kubectl`.
 - Do NOT use `microk8s enable` or any microk8s-specific commands.
 - Do NOT assume port 80 or 443 -- check the application's actual port.
+- Do NOT create Ingresses without TLS -- every web app must be HTTPS with Let's Encrypt.
 
 ## Common operations
 
