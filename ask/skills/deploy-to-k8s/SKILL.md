@@ -1,7 +1,7 @@
 ---
 name: deploy-to-k8s
 allowed-tools: execute
-description: Deploy, update, and manage applications on the Kubernetes cluster. Use this whenever you need to create deployments, services, ingresses, or update running workloads. Use kubectl (NOT microk8s kubectl).
+description: Deploy, update, and manage applications on the Kubernetes cluster. Use this whenever you need to create deployments, services, ingresses, or update running workloads. Use kubectl (NOT microk8s kubectl). Includes mandatory post-deploy verification.
 ---
 # Deploy to Kubernetes
 
@@ -55,6 +55,19 @@ kubectl rollout status deployment/<name> -n <namespace> --timeout=90s
 
 This catches crash-loops in ~15s instead of waiting 2+ minutes for a timeout.
 If the pod is crash-looping, read the logs, fix the issue, rebuild, and redeploy.
+
+## Post-deploy verification (MANDATORY)
+
+After a successful rollout, you MUST verify the application actually works:
+
+1. **Health endpoint**: `curl -sf http://<service>:<port>/health`
+2. **Database**: verify tables exist if the app uses a DB
+3. **API smoke test**: call the main GET endpoint to confirm it returns 200
+4. **Ingress**: `curl -sf -k https://<app>.nblotti.org/`
+
+Do NOT report "deployed successfully" if you only checked pod status.
+Pod running does NOT mean app working. Follow the `verify-deployment` skill
+for the full checklist.
 
 ### Expose with Ingress + TLS (Let's Encrypt)
 ```yaml

@@ -1,6 +1,6 @@
 ---
 name: build-application
-description: Build a new application from scratch. Requires presenting a detailed plan with modules and technologies to the user for confirmation before writing any code.
+description: Build a new application from scratch. Requires presenting a detailed plan with modules and technologies to the user for confirmation before writing any code. Includes mandatory post-deploy verification.
 allowed-tools: task, ask_human
 ---
 # Build Application — Mandatory Planning Phase
@@ -32,35 +32,6 @@ Before writing ANY code, you MUST call `ask_human` with a structured plan contai
 4. **Deployment plan** — K8s namespace, services, ingress
 5. **Estimated steps** — numbered list of what will be done
 
-Example ask_human message:
-```
-Here is my plan for the todo2 application:
-
-**Architecture:**
-- Backend: Python 3.12 + FastAPI + psycopg + Alembic (port 8000)
-- Frontend: React 18 + Vite + TypeScript (port 8080, served by nginx)
-- Database: PostgreSQL 16 on NAS (via create_database tool)
-- Docker: 2 images — todo2-backend, todo2-frontend
-
-**Modules:**
-1. backend/app/main.py — FastAPI app with CORS, health check
-2. backend/app/models.py — SQLAlchemy models (Todo table)
-3. backend/app/routes.py — CRUD API endpoints
-4. backend/alembic/ — DB migrations
-5. frontend/src/App.tsx — Main React component
-6. frontend/src/api.ts — API client
-7. k8s.yaml — Namespace, Deployments, Services, Ingress (todo2.nblotti.org)
-
-**Steps:**
-1. Provision PostgreSQL database
-2. Scaffold backend code + Dockerfile
-3. Scaffold frontend code + Dockerfile
-4. Build & push both images
-5. Deploy to Kubernetes with TLS ingress
-
-Shall I proceed?
-```
-
 ## Step 3: Wait for user confirmation
 
 - If the user confirms → proceed to Step 4
@@ -74,8 +45,26 @@ Follow the sequential dependency rules:
 - Provision DB can run in parallel with code scaffolding
 - Build images AFTER code is written (sequential)
 - Deploy AFTER images are built (sequential)
+- Database migration / table creation MUST happen BEFORE verification
+
+## Step 5: Verify EVERYTHING works (MANDATORY — do NOT skip)
+
+After deployment completes, you MUST spawn a verification task that tests:
+
+1. **Pod health**: all pods Running, 0 restarts
+2. **Database**: tables exist, connectivity works
+3. **API smoke tests**: call the main endpoints (GET list, POST create, GET verify)
+4. **Frontend**: returns HTML (if applicable)
+5. **Ingress**: external URL responds with 200
+
+Only report success if ALL checks pass. If any check fails, fix it and re-verify.
+
+The subagent should follow the `verify-deployment` skill instructions for the
+full checklist and reporting format.
 
 ## NEVER
 - Do NOT start writing code before user confirmation
 - Do NOT skip the ask_human planning step
 - Do NOT present a vague plan — be specific about every module and technology
+- Do NOT declare success without running verification tests
+- Do NOT skip database migration/table creation before verifying the API
