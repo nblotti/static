@@ -1,5 +1,6 @@
 ---
 name: manage-nas
+allowed-tools: execute
 description: Access and manage the Synology NAS at 192.168.1.2 via SSH. Use this whenever you need to list Docker containers on the NAS, manage files on /volume1, inspect databases, or perform any admin task on the NAS.
 ---
 # Manage NAS (Synology -- 192.168.1.2)

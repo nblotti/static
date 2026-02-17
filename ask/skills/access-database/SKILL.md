@@ -1,5 +1,6 @@
 ---
 name: access-database
+allowed-tools: create_database
 description: Connect to and query databases (PostgreSQL, MySQL, etc.). Use this whenever you need to check database connectivity, run queries, inspect schemas, or troubleshoot database issues. Use Python (not CLI tools like psql).
 ---
 # Access Database

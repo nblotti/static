@@ -1,5 +1,6 @@
 ---
 name: deploy-to-k8s
+allowed-tools: execute
 description: Deploy, update, and manage applications on the Kubernetes cluster. Use this whenever you need to create deployments, services, ingresses, or update running workloads. Use kubectl (NOT microk8s kubectl).
 ---
 # Deploy to Kubernetes

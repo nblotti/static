@@ -1,5 +1,6 @@
 ---
 name: build-image
+allowed-tools: build_and_push
 description: Build and push Docker container images from the sandbox. Use the build_and_push tool — it handles daemon startup, build, smoke test, and push atomically. NEVER use Kaniko, buildah, or any other build tool.
 ---
 # Build Docker Image
