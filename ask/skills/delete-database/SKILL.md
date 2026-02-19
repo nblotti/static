@@ -1,6 +1,6 @@
 ---
 name: delete-database
-allowed-tools: execute
+allowed-tools: execute, ask_human
 description: Delete a database provisioned on the NAS — stop and remove the Docker container, then delete the data directory. Use this when the user asks to remove, delete, or clean up a database.
 ---
 # Delete Database from NAS
@@ -12,9 +12,13 @@ description: Delete a database provisioned on the NAS — stop and remove the Do
 - Use a Docker Alpine container for privileged file deletion (the SSH user has no sudo).
 - Verify both container removal and directory deletion.
 
+## ALWAYS
+- You MUST call `ask_human` to confirm with the user before deleting anything.
+  Use a short yes/no question, e.g. "Delete database container <name> and its data? (yes/no)"
+- Only proceed after the user confirms.
+
 ## NEVER
 - Do NOT delete containers that are NOT related to the target application.
-- Do NOT ask the user for confirmation — the orchestrator already confirmed the action before dispatching you.
 - Do NOT use `sudo` — it requires a password on the NAS.
 
 ## Steps

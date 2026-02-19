@@ -1,7 +1,7 @@
 ---
 name: build-application
 description: Build a new application from scratch. The orchestrator handles plan approval — subagents proceed directly with execution. Includes mandatory post-deploy verification.
-allowed-tools: execute, create_database, build_and_push
+allowed-tools: execute, create_database, build_and_push, report_facts
 ---
 # Build Application — Full Lifecycle
 
@@ -51,6 +51,23 @@ Use `build_and_push` with:
 - `app_port`: the port the app listens on
 
 If the build fails, read the error, fix the code, and retry.
+
+## Step 7.5: Report facts (MANDATORY after Steps 4-7)
+
+After completing your work, call `report_facts` with a summary of ALL
+resources created or discovered. Include everything subsequent tasks
+might need:
+
+- Database: host, port, database name, username, password, connection string
+- Image: name, tag, registry path
+- Deployment: namespace, deployment name, service name
+- Ingress: hostname, URL
+- App: port the app listens on
+
+Example:
+```
+report_facts("Created PostgreSQL DB at 192.168.1.2:5438, db=todo, user=todo, pass=abc123. Built image todo-app:latest pushed to localhost:32000. Deployed to namespace todo with ingress at todo.nblotti.org.")
+```
 
 ## Step 6: Deploy to Kubernetes
 

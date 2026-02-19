@@ -1,6 +1,6 @@
 ---
 name: access-database
-allowed-tools: create_database
+allowed-tools: create_database, report_facts
 description: Connect to and query databases (PostgreSQL, MySQL, etc.). Use this whenever you need to check database connectivity, run queries, inspect schemas, or troubleshoot database issues. Use Python (not CLI tools like psql).
 ---
 # Access Database
@@ -86,3 +86,15 @@ Use the `create_database` tool:
 create_database('my-app')
 ```
 This creates a PostgreSQL container on the NAS with auto-allocated port, credentials, and data directory.
+
+## Report facts (MANDATORY after provisioning)
+
+After provisioning or discovering database connection details, call
+`report_facts` with a summary of ALL connection details:
+
+```
+report_facts("Provisioned PostgreSQL at host=192.168.1.2, port=5438, db=my_app, user=my_app, password=xyz123. Connection string: postgresql://my_app:xyz123@192.168.1.2:5438/my_app")
+```
+
+This persists structured facts so subsequent tasks (build, deploy) can
+automatically consume the database credentials.
