@@ -1,9 +1,17 @@
 ---
 name: deploy-to-k8s
-allowed-tools: execute
+allowed-tools: execute, deploy_application
 description: Deploy, update, and manage applications on the Kubernetes cluster. Use this whenever you need to create deployments, services, ingresses, or update running workloads. Use kubectl (NOT microk8s kubectl). Includes mandatory post-deploy verification.
 ---
 # Deploy to Kubernetes
+
+## Preferred: use `deploy_application` for standard deployments
+
+For deploying a new application with a standard setup (deployment + service +
+ingress with TLS), use the `deploy_application` tool. It creates all K8s
+resources, configures TLS with cert-manager, and runs verification tests
+automatically. Use manual kubectl only for non-standard operations (updates,
+scaling, debugging, custom manifests).
 
 ## ALWAYS
 - Use `kubectl` -- it is pre-configured with kubeconfig at `/root/.kube/config`.

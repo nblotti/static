@@ -1,7 +1,7 @@
 ---
 name: build-application
 description: You are a software engineer. Build means develop — write source code, create project structure, wire dependencies, and package the result. Deploy means put a finished artifact on infrastructure. Your job starts at build.
-allowed-tools: execute, create_database, build_and_push, report_facts
+allowed-tools: execute, create_database, build_and_push, deploy_application, report_facts
 ---
 # Build Application — Software Engineer Mindset
 
@@ -51,12 +51,16 @@ specify a detail, decide as a competent engineer would.
 
 ## Step 4: Provision database (if needed)
 
-If the app needs a database, call `create_database` with the app name.
-This provisions a dedicated PostgreSQL container on the NAS.
+First check: was a database connection string already provided in your
+prompt (from a prior task, the COMPLETED WORK section, or the orchestrator)?
+If yes, **use it directly and skip to Step 5**. Do not call `create_database`
+again — the database already exists.
+
+Only call `create_database` if no connection details are available anywhere
+in your prompt. It provisions a dedicated PostgreSQL container on the NAS.
 Capture the returned connection string for use in deployment.
 
 **Do NOT** inspect the NAS manually for existing databases.
-**Always** use `create_database` — it handles deduplication internally.
 
 ## Step 5: Package — build and push Docker image
 
@@ -74,34 +78,29 @@ This is normal engineering iteration — build errors are expected.
 
 Now — and only now — you have an artifact to deploy.
 
-Create K8s manifests (Deployment, Service, Ingress) and apply with kubectl.
-Wire in the database connection string from Step 4 as environment variables.
-Use `localhost:32000/<image>:<tag>` for the image reference.
+Use `deploy_application` with:
+- `app_name`: the app name (e.g., `td28`)
+- `image`: the image from Step 5 (e.g., `localhost:32000/td28:latest`)
+- `app_port`: the port the app listens on
+- `hostname`: the target URL (e.g., `td28.nblotti.org`)
+- `env_vars`: JSON with environment variables (e.g., `{"DATABASE_URL": "postgresql://..."}`)
 
-## Step 7: Verify ALL layers (MANDATORY — do NOT skip)
+This tool creates the namespace, deployment, service, and ingress with TLS
+automatically, then runs verification tests (pod health, API smoke test,
+external ingress). If it fails, read the output, fix the issue, and retry.
 
-You MUST test every layer of the application before declaring success.
-Follow the `verify-deployment` skill for the full checklist.
+Do NOT write K8s manifests manually — use `deploy_application`.
 
-### 7a. Database layer
-- Connect to the database and verify tables exist
-- Run a simple query (e.g., SELECT 1, list tables)
-- If tables are missing, run migrations BEFORE continuing
+## Step 7: Verify deployment result
 
-### 7b. REST API layer
-- Test the main endpoints via the internal service (curl from sandbox)
-- At minimum: GET list, POST create, GET verify the created item
-- All must return 2xx — a 500 means the app is broken, fix it
+The `deploy_application` tool runs built-in verification. Check its output:
+- If `ok: true` — deployment and all tests passed. Proceed to report facts.
+- If `ok: false` — read the error output, fix the issue (code, config, or
+  database), and call `deploy_application` again.
 
-### 7c. Frontend layer
-- Verify the frontend returns HTML with expected content
-- If an ingress is configured, you MUST test through the **external URL**
-  (e.g., `curl -sf -k https://<app>.nblotti.org/`), NOT only via
-  localhost or cluster-internal service
-- The frontend must be reachable from outside the cluster — this is
-  the user's entry point and the final proof that everything works
-- If the ingress test fails (DNS, TLS, 502, 404), fix it before
-  declaring success
+If you need additional verification beyond what the tool checks (e.g.,
+testing specific API endpoints with custom payloads), run those manually
+via `execute` + `kubectl exec`.
 
 ## Step 7.5: Report facts (MANDATORY after completing work)
 
