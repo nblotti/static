@@ -1,7 +1,7 @@
 ---
 name: build-application
 description: You are a software engineer. Build means develop — write source code, create project structure, wire dependencies, and package the result. Deploy means put a finished artifact on infrastructure. Your job starts at build.
-allowed-tools: execute, create_database, build_back, build_front, build_and_push, deploy_application, report_facts
+allowed-tools: build_back build_front build_and_push deploy_application create_database execute write_file read_file ls grep glob report_facts
 ---
 # Build Application — Software Engineer Mindset
 
