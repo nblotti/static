@@ -106,16 +106,28 @@ external ingress). If it fails, read the output, fix the issue, and retry.
 
 Do NOT write K8s manifests manually — use `deploy_application`.
 
-## Step 7: Verify deployment result
+## Step 7: Verify deployment result (MANDATORY — do NOT skip)
 
-The `deploy_application` tool runs built-in verification. Check its output:
-- If `ok: true` — deployment and all tests passed. Proceed to report facts.
-- If `ok: false` — read the error output, fix the issue (code, config, or
-  database), and call `deploy_application` again.
+The `deploy_application` tool runs built-in verification. Check its output
+carefully — look for ASSET_FAIL or WARNING lines, not just `ok: true`.
 
-If you need additional verification beyond what the tool checks (e.g.,
-testing specific API endpoints with custom payloads), run those manually
-via `execute` + `kubectl exec`.
+**You MUST also run these checks yourself via `execute`:**
+
+1. **Health**: `curl -sf https://{hostname}/health` — must return `{"ok": true}`
+2. **HTML at root**: `curl -sf https://{hostname}/` — must return HTML, not JSON.
+   If it returns JSON like `{"message": "..."}`, the frontend is missing.
+3. **Asset URLs**: Parse the HTML from step 2. For every `src=` and `href=`
+   URL (e.g. `/assets/index-xxx.js`), fetch it and confirm HTTP 200.
+   If any asset returns 404, the page will be **blank**. This means the
+   FastAPI static file mount path does not match vite's output paths.
+   Fix `main.py` to mount the `static/assets/` directory at `/assets`
+   (not `/static`), then rebuild and redeploy.
+4. **API CRUD**: `curl -sf https://{hostname}/api/{entity_plural}` — must
+   return `[]` (empty list). Test a POST to create one item and GET again.
+
+If ANY check fails, diagnose the root cause, fix the code with `write_file`,
+rebuild with `build_and_push`, and redeploy with `deploy_application`.
+Repeat until ALL checks pass. Do NOT report success with failing checks.
 
 ## Step 7.5: Report facts (MANDATORY after completing work)
 
