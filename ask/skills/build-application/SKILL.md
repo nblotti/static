@@ -1,70 +1,80 @@
 ---
 name: build-application
-description: Build a new application from scratch. Requires presenting a detailed plan with modules and technologies to the user for confirmation before writing any code. Includes mandatory post-deploy verification.
-allowed-tools: task, ask_human
+description: Build a new application from scratch. The orchestrator handles plan approval — subagents proceed directly with execution. Includes mandatory post-deploy verification.
+allowed-tools: execute, create_database, build_and_push
 ---
-# Build Application — Mandatory Planning Phase
+# Build Application — Full Lifecycle
 
-When the user asks to CREATE, BUILD, or SCAFFOLD a new application from scratch,
-you MUST follow this strict workflow. Do NOT skip any step.
+When dispatched to BUILD or SCAFFOLD a new application, follow this workflow.
+The orchestrator has already obtained user approval for the plan.
 
-## Step 1: Gather requirements (internal — no tool calls)
+## Step 1: Check for approved plan context
 
-From the user request, determine:
-- What the application does (purpose, features)
-- Any explicit technology preferences mentioned
+Look at the top of your prompt for an `--- APPROVED PLAN ---` section.
+If present, the user has already approved the plan — proceed directly.
+If absent, infer the plan from your task description and proceed.
 
-## Step 2: Present a detailed plan via ask_human (MANDATORY)
+**Do NOT call ask_human.** The orchestrator handles all user interaction.
 
-Before writing ANY code, you MUST call `ask_human` with a structured plan containing:
+## Step 2: Gather requirements (internal — no tool calls)
 
-1. **Application name** and hostname (e.g. `myapp.nblotti.org`)
-2. **Architecture overview** — list every module/component:
-   - Backend: framework, language, key libraries
-   - Frontend: framework, bundler, UI approach
-   - Database: type, provisioning method
-   - Docker: number of images, base images
-3. **Technology stack summary** — e.g.:
-   - Backend: Python 3.12 + FastAPI + SQLAlchemy + Alembic
-   - Frontend: React 18 + Vite + TypeScript
-   - Database: PostgreSQL 16 (provisioned on NAS via create_database)
-   - Containerization: 2 Docker images (backend, frontend)
-4. **Deployment plan** — K8s namespace, services, ingress
-5. **Estimated steps** — numbered list of what will be done
+From your task prompt, determine:
+- App name, URL, features
+- Stack: backend, frontend, database
+- Container port
 
-## Step 3: Wait for user confirmation
+## Step 3: Scaffold the code
 
-- If the user confirms → proceed to Step 4
-- If the user requests changes → revise the plan and ask again
-- Do NOT start building until the user explicitly confirms
+Create all necessary source files in `/workspace/<app-name>/`:
+- Application code (backend + frontend)
+- Dockerfile
+- Requirements/dependencies file
+- Database migration or init logic
 
-## Step 4: Execute the plan
+Use `write_file` to generate each file. Choose sensible defaults for
+anything not specified in the task prompt.
 
-Spawn subagents via `task` to implement each part of the confirmed plan.
-Follow the sequential dependency rules:
-- Provision DB can run in parallel with code scaffolding
-- Build images AFTER code is written (sequential)
-- Deploy AFTER images are built (sequential)
-- Database migration / table creation MUST happen BEFORE verification
+## Step 4: Provision database (if needed)
 
-## Step 5: Verify EVERYTHING works (MANDATORY — do NOT skip)
+If the app needs a database, call `create_database` with the app name.
+This provisions a dedicated PostgreSQL container on the NAS.
+Capture the returned connection string for use in deployment.
 
-After deployment completes, you MUST spawn a verification task that tests:
+**Do NOT** inspect the NAS manually for existing databases.
+**Always** use `create_database` — it handles deduplication internally.
+
+## Step 5: Build and push Docker image
+
+Use `build_and_push` with:
+- `context_path`: the workspace directory (e.g., `/workspace/todo-app`)
+- `image_name`: the app name (e.g., `todo-app`)
+- `app_port`: the port the app listens on
+
+If the build fails, read the error, fix the code, and retry.
+
+## Step 6: Deploy to Kubernetes
+
+Create K8s manifests (Deployment, Service, Ingress) and apply with kubectl.
+Wire in the database connection string from Step 4 as environment variables.
+Use `localhost:32000/<image>:<tag>` for the image reference.
+
+## Step 7: Verify EVERYTHING works (MANDATORY — do NOT skip)
+
+After deployment, run verification tests:
 
 1. **Pod health**: all pods Running, 0 restarts
 2. **Database**: tables exist, connectivity works
-3. **API smoke tests**: call the main endpoints (GET list, POST create, GET verify)
+3. **API smoke tests**: call main endpoints (GET list, POST create, GET verify)
 4. **Frontend**: returns HTML (if applicable)
 5. **Ingress**: external URL responds with 200
 
-Only report success if ALL checks pass. If any check fails, fix it and re-verify.
-
-The subagent should follow the `verify-deployment` skill instructions for the
-full checklist and reporting format.
+Only report success if ALL checks pass. If any fails, fix and re-verify.
+Follow the `verify-deployment` skill for the full checklist.
 
 ## NEVER
-- Do NOT start writing code before user confirmation
-- Do NOT skip the ask_human planning step
-- Do NOT present a vague plan — be specific about every module and technology
+- Do NOT call ask_human — the orchestrator handles user interaction
+- Do NOT ask questions in your response text — the user cannot reply
 - Do NOT declare success without running verification tests
 - Do NOT skip database migration/table creation before verifying the API
+- Do NOT manually inspect the NAS for databases — use create_database
+- Do NOT use docker build/push via execute — use build_and_push
