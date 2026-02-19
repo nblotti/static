@@ -1,72 +1,41 @@
 ---
 name: delete-app
-allowed-tools: execute
-description: Delete an application completely — Kubernetes resources AND any associated NAS database. Always check both K8s and NAS when deleting an app.
+allowed-tools: delete_application report_facts
+description: Delete an application completely — Kubernetes resources AND any associated NAS database. Use the delete_application tool which handles everything atomically with built-in user confirmation.
 ---
 # Delete Application (Full Cleanup)
 
-The orchestrator handles user confirmation via submit_plan before dispatching
-this task. Proceed directly with deletion.
+## ALWAYS
 
-When deleting an application, ALWAYS check and clean up BOTH locations:
-1. **Kubernetes** — namespace, deployments, services, ingress, secrets
-2. **NAS (192.168.1.2)** — associated PostgreSQL database container + data directory
+Use the `delete_application` tool. It handles EVERYTHING:
+- Discovers K8s namespace + NAS database container automatically
+- Shows the user exactly what was found and asks for confirmation
+- Deletes K8s namespace (all resources inside it)
+- Removes NAS postgres container + data directory via SSH
+- Verifies cleanup
+
+## How to use
+
+```
+delete_application(app_name="<name>")
+```
+
+- `app_name`: the application name (e.g. `td32`). Used to find the K8s
+  namespace and the NAS container (`<name>-postgres`).
+- `namespace`: optional, defaults to `app_name`.
+- `skip_nas`: set to `True` if the app has no database on the NAS.
+
+The tool will discover what exists, present findings to the user for
+confirmation, then delete everything after approval.
+
+## After deletion
+
+Call `report_facts` with a summary of what was deleted (namespace, container,
+data directory) so subsequent tasks are aware.
 
 ## NEVER
-- Do NOT delete namespaces: default, kube-system, kube-public, ingress-nginx, cert-manager, a2a, ask.
-- Do NOT call ask_human — it is deprecated. The user already confirmed.
 
-## Steps
-
-### Step 1: Identify and delete Kubernetes resources
-
-```bash
-# List everything in the namespace
-kubectl get all,ingress,secret,configmap,pvc -n <namespace>
-
-# Delete the entire namespace (removes all resources at once)
-kubectl delete namespace <namespace>
-
-# Verify deletion
-kubectl get ns <namespace>
-```
-
-If the app is in a shared namespace, delete only its specific resources:
-```bash
-kubectl delete deployment,service,ingress,secret,configmap -l app=<name> -n <namespace>
-```
-
-### Step 2: Check NAS for associated database
-
-ALWAYS do this — even if not explicitly asked. Applications often have a PostgreSQL database on the NAS.
-
-```bash
-# List all postgres containers, look for ones matching the app name
-ssh nblotti@192.168.1.2 'docker ps -a --filter ancestor=postgres --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"'
-```
-
-Common naming patterns: `<app>-postgres`, `<app>-db`, `<app>-pg`
-
-### Step 3: Delete NAS database (if found)
-
-```bash
-# Get the data directory from the container
-ssh nblotti@192.168.1.2 'docker inspect <container-name> --format "{{range .Mounts}}{{.Source}} -> {{.Destination}}{{println}}{{end}}"'
-
-# Remove the container
-ssh nblotti@192.168.1.2 'docker rm -f <container-name>'
-
-# Delete the data directory (use Docker for privileged file ops)
-ssh nblotti@192.168.1.2 'docker run --rm -v /volume1:/volume1 alpine rm -rf /volume1/<data-dir>'
-
-# Verify
-ssh nblotti@192.168.1.2 'docker ps -a --filter name=<container-name>'
-ssh nblotti@192.168.1.2 'ls /volume1/<data-dir> 2>&1 || echo "Directory deleted"'
-```
-
-### Step 4: Report summary
-
-Report what was deleted:
-- K8s namespace/resources removed: yes/no
-- NAS database container removed: yes/no (name, port)
-- NAS data directory removed: yes/no (path)
+- Do NOT run `kubectl delete` manually — use `delete_application`.
+- Do NOT run `ssh` commands manually — the tool handles NAS access.
+- Do NOT delete protected namespaces: default, kube-system, kube-public,
+  kube-node-lease, ingress-nginx, cert-manager, a2a, ask.
