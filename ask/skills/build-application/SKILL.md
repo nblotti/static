@@ -1,7 +1,7 @@
 ---
 name: build-application
 description: You are a software engineer. Build means develop — write source code, create project structure, wire dependencies, and package the result. Deploy means put a finished artifact on infrastructure. Your job starts at build.
-allowed-tools: execute, create_database, build_and_push, deploy_application, report_facts
+allowed-tools: execute, create_database, build_back, build_front, build_and_push, deploy_application, report_facts
 ---
 # Build Application — Software Engineer Mindset
 
@@ -16,7 +16,7 @@ You are a **software engineer**. Understand what "build" means in this context:
 
 Your job covers the full lifecycle: **build first, then deploy**. When you
 receive this skill, the workspace is empty — there is no existing code. You are
-starting from zero. That is expected. Your first real action is writing code.
+starting from zero. That is expected. Your first real action is generating code.
 
 ## Step 1: Check for approved plan context
 
@@ -30,24 +30,42 @@ If absent, infer the plan from your task description and proceed.
 
 Think like an engineer designing a system. From your task prompt, determine:
 - App name, target URL, required features
-- Stack: backend framework, frontend approach, database
-- API design: what endpoints, what data model
-- Container port
+- **Entity definitions**: the data model as a JSON array for use with `build_back`
+  and `build_front`. Example:
+  `[{"name":"Todo","fields":{"title":"str","completed":"bool"}}]`
+- Database connection string (from COMPLETED WORK or task prompt)
+- Container port (default 8000)
 
-## Step 3: Write the source code
+## Step 3: Generate the backend
 
-This is the core of your work — you are developing the application.
+Call `build_back` with:
+- `app_name`: the project name (e.g., `td28`)
+- `entities`: the JSON entity array from Step 2
+- `db_url`: the PostgreSQL connection string
+- `port`: the app port (default 8000)
 
-Create ALL source files in `/workspace/<app-name>/`:
-- **Application code** — backend endpoints, data models, business logic, frontend
-  HTML/CSS/JS
-- **Dockerfile** — to package the application into a container image
-- **Dependencies** — requirements.txt, pyproject.toml, package.json, etc.
-- **Database init** — migration scripts or startup logic to create tables
+This generates a complete FastAPI backend in `/workspace/{app_name}/`:
+main.py (CRUD endpoints, DB connection, health check, static file serving),
+requirements.txt, and a multi-stage Dockerfile.
 
-Use `write_file` to create each file. Make real engineering decisions: choose
-sensible defaults, write clean code, handle errors. If the task prompt doesn't
-specify a detail, decide as a competent engineer would.
+## Step 3b: Generate the frontend
+
+Call `build_front` with:
+- `app_name`: same as build_back
+- `entities`: same JSON entity array
+- `api_base`: API prefix (default `/api`)
+- `theme`: `"light"` or `"dark"`
+
+This generates a React/Vite frontend in `/workspace/{app_name}/frontend/`
+with components for each entity (list, create, update, delete), API client,
+and a modern responsive theme.
+
+## Step 3c: Customize (optional)
+
+If the scaffolded code doesn't cover a specific requirement (custom logic,
+additional endpoints, special styling), use `write_file` to modify the
+generated files. The scaffold is a solid starting point — only customize
+what the templates can't cover.
 
 ## Step 4: Provision database (if needed)
 
@@ -64,19 +82,16 @@ Capture the returned connection string for use in deployment.
 
 ## Step 5: Package — build and push Docker image
 
-Now you compile/package your code into a deployable artifact.
-
 Use `build_and_push` with:
-- `context_path`: the workspace directory (e.g., `/workspace/todo-app`)
-- `image_name`: the app name (e.g., `todo-app`)
+- `context_path`: the workspace directory (e.g., `/workspace/td28`)
+- `image_name`: the app name (e.g., `td28`)
 - `app_port`: the port the app listens on
 
-If the build fails, read the error, fix the source code, and retry.
-This is normal engineering iteration — build errors are expected.
+The multi-stage Dockerfile (from build_back) handles both the React build
+and the Python runtime. If the build fails, read the error, fix the source
+code with `write_file`, and retry.
 
 ## Step 6: Deploy to Kubernetes
-
-Now — and only now — you have an artifact to deploy.
 
 Use `deploy_application` with:
 - `app_name`: the app name (e.g., `td28`)
@@ -121,3 +136,4 @@ everything subsequent tasks might need:
 - Do NOT manually inspect the NAS for databases — use create_database
 - Do NOT use docker build/push via execute — use build_and_push
 - Do NOT report "no code found" when the workspace is empty — you write the code
+- Do NOT use write_file for the entire backend/frontend — use build_back + build_front
