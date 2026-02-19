@@ -5,14 +5,16 @@ description: Delete an application completely — Kubernetes resources AND any a
 ---
 # Delete Application (Full Cleanup)
 
+The orchestrator handles user confirmation via submit_plan before dispatching
+this task. Proceed directly with deletion.
+
 When deleting an application, ALWAYS check and clean up BOTH locations:
 1. **Kubernetes** — namespace, deployments, services, ingress, secrets
 2. **NAS (192.168.1.2)** — associated PostgreSQL database container + data directory
 
 ## NEVER
 - Do NOT delete namespaces: default, kube-system, kube-public, ingress-nginx, cert-manager, a2a, ask.
-- Do NOT ask the user for confirmation — the orchestrator already confirmed via ask_human before dispatching you. USER HAS ALREADY CONFIRMED.
-- Do NOT call ask_human yourself. If you were dispatched, the action is approved.
+- Do NOT call ask_human — it is deprecated. The user already confirmed.
 
 ## Steps
 
