@@ -42,23 +42,33 @@ Call `build_back` with:
 - `app_name`: the project name (e.g., `td28`)
 - `entities`: the JSON entity array from Step 2
 - `db_url`: the PostgreSQL connection string
+- `framework`: backend framework — `"fastapi"` (default). Other frameworks may
+  be added in the future.
 - `port`: the app port (default 8000)
 
-This generates a complete FastAPI backend in `/workspace/{app_name}/`:
-main.py (CRUD endpoints, DB connection, health check, static file serving),
-requirements.txt, and a multi-stage Dockerfile.
+This generates a complete backend in `/workspace/{app_name}/` with:
+application code, **test files** (e.g. `test_main.py`), requirements, and a
+multi-stage Dockerfile. The tool **automatically runs the test suite** after
+generation — check `tests_passed` in the output. If tests fail, read
+`test_output`, fix with `write_file`, and call `build_back` again.
 
 ## Step 3b: Generate the frontend
 
 Call `build_front` with:
 - `app_name`: same as build_back
 - `entities`: same JSON entity array
+- `framework`: frontend framework — `"react"` (default), `"vue"`, or
+  `"angular"`. Choose based on the user's request; default to `"react"` if
+  not specified.
 - `api_base`: API prefix (default `/api`)
 - `theme`: `"light"` or `"dark"`
 
-This generates a React/Vite frontend in `/workspace/{app_name}/frontend/`
-with components for each entity (list, create, update, delete), API client,
-and a modern responsive theme.
+This generates a frontend in `/workspace/{app_name}/frontend/` with
+components for each entity (list, create, update, delete), API client, a
+modern responsive theme, and **test files**. The tool **automatically installs
+dependencies, runs the test suite, and builds for production** — check
+`tests_passed` in the output. If tests fail, read `test_output`, fix with
+`write_file`, and call `build_front` again.
 
 ## Step 3c: Customize (optional)
 
