@@ -60,17 +60,24 @@ curl -sf -X POST http://<service>:<port>/api/<resource> \
 curl -sf http://<service>:<port>/api/<resource> | head -c 500
 ```
 
-### 5. Frontend (if applicable)
+### 5. Frontend — internal (if applicable)
 ```bash
 curl -sf http://<frontend-service>:<port>/ | head -c 200
 # Verify: returns HTML with expected title/framework markers
 ```
 
-### 6. External access (ingress)
+### 6. Frontend — via ingress (MANDATORY when ingress exists)
+If the app has an ingress, you MUST test through the external URL.
+This is the user's actual entry point — localhost-only tests are
+insufficient. The frontend must be reachable from outside the cluster.
 ```bash
-curl -sf -k https://<app>.nblotti.org/ | head -c 200
-curl -sf -k https://<app>.nblotti.org/api/<resource> | head -c 200
+# Test both the frontend page and the API through the ingress:
+curl -sf -k https://<app>.nblotti.org/ | head -c 500
+curl -sf -k https://<app>.nblotti.org/api/<resource> | head -c 500
 ```
+If this fails (DNS not resolving, TLS error, 502, 404), diagnose and
+fix. Common issues: missing ingress rule, wrong service port, cert-manager
+not ready. Do NOT skip this step or declare success without it.
 
 ## Reporting
 
@@ -93,4 +100,7 @@ Do NOT report success until everything passes.
 - Do NOT say "deployment successful" based only on kubectl rollout status
 - Do NOT skip API tests — pod running does NOT mean app working
 - Do NOT skip database verification when the app uses a database
+- Do NOT skip ingress/external URL testing when an ingress is configured
+- Do NOT test only via localhost/ClusterIP and call it done — the user
+  accesses the app via the ingress URL, so that is the real test
 - Do NOT report partial success — ALL checks must pass

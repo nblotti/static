@@ -75,18 +75,30 @@ Create K8s manifests (Deployment, Service, Ingress) and apply with kubectl.
 Wire in the database connection string from Step 4 as environment variables.
 Use `localhost:32000/<image>:<tag>` for the image reference.
 
-## Step 7: Verify EVERYTHING works (MANDATORY — do NOT skip)
+## Step 7: Verify ALL layers (MANDATORY — do NOT skip)
 
-After deployment, run verification tests:
-
-1. **Pod health**: all pods Running, 0 restarts
-2. **Database**: tables exist, connectivity works
-3. **API smoke tests**: call main endpoints (GET list, POST create, GET verify)
-4. **Frontend**: returns HTML (if applicable)
-5. **Ingress**: external URL responds with 200
-
-Only report success if ALL checks pass. If any fails, fix and re-verify.
+You MUST test every layer of the application before declaring success.
 Follow the `verify-deployment` skill for the full checklist.
+
+### 7a. Database layer
+- Connect to the database and verify tables exist
+- Run a simple query (e.g., SELECT 1, list tables)
+- If tables are missing, run migrations BEFORE continuing
+
+### 7b. REST API layer
+- Test the main endpoints via the internal service (curl from sandbox)
+- At minimum: GET list, POST create, GET verify the created item
+- All must return 2xx — a 500 means the app is broken, fix it
+
+### 7c. Frontend layer
+- Verify the frontend returns HTML with expected content
+- If an ingress is configured, you MUST test through the **external URL**
+  (e.g., `curl -sf -k https://<app>.nblotti.org/`), NOT only via
+  localhost or cluster-internal service
+- The frontend must be reachable from outside the cluster — this is
+  the user's entry point and the final proof that everything works
+- If the ingress test fails (DNS, TLS, 502, 404), fix it before
+  declaring success
 
 ## NEVER
 - Do NOT call ask_human — the orchestrator handles user interaction
