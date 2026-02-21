@@ -1,7 +1,7 @@
 ---
 name: spotify
 description: Manage Spotify playlists — list, read, classify, create, and replace tracks. Use whenever the user mentions playlists, songs, tracks, artists, music, Spotify, or classification.
-allowed-tools: spotify_list_playlists spotify_get_playlist_tracks spotify_get_liked_tracks spotify_get_tracks spotify_get_artists spotify_get_audio_features spotify_create_playlist spotify_replace_playlist_tracks spotify_classify_tracks
+allowed-tools: spotify_list_playlists spotify_get_playlist_tracks spotify_get_liked_tracks spotify_create_playlist spotify_replace_playlist_tracks spotify_classify_tracks
 ---
 # Spotify playlist management
 
@@ -12,8 +12,6 @@ allowed-tools: spotify_list_playlists spotify_get_playlist_tracks spotify_get_li
 | spotify_list_playlists | List all playlists (id, name, public, total_tracks) |
 | spotify_get_playlist_tracks | Get tracks from a playlist (includes track_id, name, uri, artist_names) |
 | spotify_get_liked_tracks | Get the Liked Songs (same fields as playlist tracks) |
-| spotify_get_tracks | Get detailed metadata for tracks (duration, album, release date) — rate-limited |
-| spotify_get_artists | Look up artist metadata — rate-limited, avoid if possible |
 | spotify_classify_tracks | AI classification: genre, mood, energy, tempo (up to 50/call) |
 | spotify_create_playlist | Create a new empty playlist |
 | spotify_replace_playlist_tracks | Replace playlist contents with track URIs |
@@ -31,8 +29,8 @@ allowed-tools: spotify_list_playlists spotify_get_playlist_tracks spotify_get_li
 
 IMPORTANT: spotify_classify_tracks accepts the track dicts returned by
 spotify_get_playlist_tracks / spotify_get_liked_tracks directly. Do NOT
-call spotify_get_tracks or spotify_get_artists first — they are rate-limited
-and unnecessary for classification.
+call spotify_get_tracks or spotify_get_artists — they make one API call
+per track/artist and will trigger Spotify rate limits.
 
 ## Classification values
 
@@ -48,3 +46,4 @@ and unnecessary for classification.
 - For large playlists, classify in batches and merge results
 - When filtering by artist uniqueness, use artist_names from playlist data
 - Always use spotify tools directly. Do NOT use kubectl or execute for Spotify operations.
+- NEVER call spotify_get_tracks or spotify_get_artists in bulk — they are rate-limited.
