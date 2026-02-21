@@ -11,24 +11,39 @@ This is the ONLY correct way to count generated podcasts. You MUST follow these 
 
 **CRITICAL**: `daily-arxiv-podcast` is NOT a podcast. It is an article selector that produces ZERO audio. NEVER count it. NEVER list its pods as podcasts. Ignore ALL pods/workflows named `daily-arxiv-podcast-*` when answering podcast count questions.
 
-Podcast episodes are produced by workflows named `blog-podcast-*`. Each `blog-podcast-*` workflow generates audio (MP3) for one article in one or more languages (EN, FR). Run these two commands in order:
+Podcast episodes are produced by workflows named `blog-podcast-*`. Each `blog-podcast-*` workflow generates audio (MP3) for one article in one or more languages (EN, FR). Run these commands in order:
 
-**Step 1** — List `blog-podcast-*` workflows:
+**Step 1** — List `blog-podcast-*` workflows with creation timestamps:
 ```bash
-kubectl get wf -n podcast --sort-by=.metadata.creationTimestamp | grep blog-podcast
+kubectl get wf -n podcast --sort-by=.metadata.creationTimestamp \
+  -o custom-columns=NAME:.metadata.name,STATUS:.status.phase,CREATED:.metadata.creationTimestamp \
+  | grep blog-podcast
 ```
 
-**Step 2** — Extract published episode titles from their logs:
+**IMPORTANT: If the user asks about "today", filter workflows by today's date (YYYY-MM-DD).** Only count workflows whose CREATED column starts with today's date. Do NOT count workflows from previous days.
+
+**Step 2** — Extract published episode titles from TODAY's workflows only:
 ```bash
-for pod in $(kubectl get pods -n podcast --no-headers -o custom-columns=NAME:.metadata.name | grep "blog-podcast-.*-publish"); do
-  kubectl logs -n podcast "$pod" -c main 2>&1 | grep '"episode_name"' | sed 's/.*"episode_name": "//;s/".*//'
+TODAY=$(date -u +%Y-%m-%d)
+for wf in $(kubectl get wf -n podcast -o jsonpath='{range .items[?(@.metadata.name)]}{.metadata.name}{" "}{.metadata.creationTimestamp}{"\n"}{end}' | grep "blog-podcast" | grep "$TODAY" | awk '{print $1}'); do
+  pod=$(kubectl get pods -n podcast --no-headers -o custom-columns=NAME:.metadata.name | grep "${wf}.*publish" | head -1)
+  [ -n "$pod" ] && kubectl logs -n podcast "$pod" -c main 2>&1 | grep '"episode_name"' | sed 's/.*"episode_name": "//;s/".*//'
 done
 ```
 
 Each output line = one published podcast episode. Lines ending with `(FR)` are French. Report:
-- Total episode count
+- Total episode count **for the requested time period only**
 - A table with episode title and language (EN/FR)
 - How many `blog-podcast-*` workflows succeeded vs failed
+- If any workflow has `"published_episodes": []`, report it as a generation failure
+
+**Step 3** — Check article selection status (did new articles arrive?):
+```bash
+kubectl get wf -n podcast --sort-by=.metadata.creationTimestamp \
+  -o custom-columns=NAME:.metadata.name,STATUS:.status.phase,CREATED:.metadata.creationTimestamp \
+  | grep daily-arxiv-podcast | tail -3
+```
+If the latest `daily-arxiv-podcast` FAILED, report this — it means no new articles were selected from arXiv.
 
 ## Quick Answers to Other Common Questions
 
