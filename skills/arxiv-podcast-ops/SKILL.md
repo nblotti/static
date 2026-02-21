@@ -1,9 +1,42 @@
 ---
 name: arxiv-podcast-ops
-description: Investigate, debug, and operate the Arxiv podcast generation pipeline running on Kubernetes with Argo Workflows. Use when the user asks about podcasts not being generated, workflow failures, Open Notebook issues, publishing errors, or wants to trigger manual podcast runs.
+description: Investigate, debug, and operate the Arxiv podcast generation pipeline running on Kubernetes with Argo Workflows. Use when the user asks about podcasts, podcast counts, workflow failures, Open Notebook issues, publishing errors, RSS feeds, or wants to trigger manual podcast runs. Also use when the user mentions "arXiv", "podcast", "generated today", or "blog-podcast".
 ---
 
 # Arxiv Podcast Ops
+
+## Quick Answers to Common Questions
+
+When the user asks an operational question, run the commands below directly. Do NOT say you lack context — this IS the podcast system.
+
+**"How many podcasts were generated today / this week / since date X?"**
+1. List today's workflows: `kubectl get wf -n podcast --sort-by=.metadata.creationTimestamp | tail -20`
+2. Identify `blog-podcast-*` workflows with status `Succeeded` or `Running`
+3. For each, get published episode names:
+```bash
+for pod in $(kubectl get pods -n podcast --no-headers -o custom-columns=NAME:.metadata.name | grep "blog-podcast-.*-publish"); do
+  kubectl logs -n podcast "$pod" -c main 2>&1 | grep '"episode_name"' | sed 's/.*"episode_name": "//;s/".*//'
+done
+```
+4. Count and list them. Each line is one published episode. Episodes ending with `(FR)` are French versions.
+
+**"Why weren't podcasts generated?" / "What failed?"**
+Follow the Debugging Workflow section below (Step 1-4).
+
+**"What articles are available for podcast generation?"**
+Run the "Check available candidates" command in the Manual Operations section.
+
+**"Can you generate N podcasts from arXiv?"**
+Use the "Trigger N podcast generations" template in [commands.md](commands.md).
+
+**"What's the RSS feed URL?"**
+- English daily: `https://d192ozvnkhed8.cloudfront.net/podcasts/daily/feed_daily_en.xml`
+- French daily: `https://d192ozvnkhed8.cloudfront.net/podcasts/daily/feed_daily_fr.xml`
+- English articles: `https://d192ozvnkhed8.cloudfront.net/podcasts/articles/feed_articles_en.xml`
+- French articles: `https://d192ozvnkhed8.cloudfront.net/podcasts/articles/feed_articles_fr.xml`
+
+**"What podcast format / profile is active?"**
+The active profile is `shipit_profile.txt` — podcast "Let's Ship It with AI" with Jamie + Marc. See the Podcast Profiles section below.
 
 ## Architecture
 
