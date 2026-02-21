@@ -146,6 +146,46 @@ MP3 files are stored at:
 | Email | `nblotti@gmail.com` |
 | Website | `https://nicholasblotti.wpcomstaging.com/category/ai/podcast/` |
 
+## Podcast Profiles
+
+Profiles are LLM prompt templates that define the podcast dialogue format. They live in the same `nblotti/static` repo under `podcast-profiles/` and are fetched by the `sync-notebook` step via GitHub raw URL.
+
+### Active Profile
+
+**File**: `podcast-profiles/shipit_profile.txt`
+**Raw URL**: `https://raw.githubusercontent.com/nblotti/static/master/podcast-profiles/shipit_profile.txt`
+**Podcast name**: "Let's Ship It with AI"
+**Speakers**: Jamie (journalist/moderator, woman) + Marc (expert, man)
+**Structure**:
+1. Intro + source reference (Jamie names the paper, asks Marc the practical use)
+2. Executive summary (Marc gives 30-60s overview)
+3. Topic-by-topic deep dive (4-8 topics extracted from the document, NOT section-by-section)
+4. Practical implications (what should teams do now)
+5. Conclusion + closing script (RSS feed + Spotify reference)
+
+**Closing script** (verbatim, never change): "To finish, a quick reminder: the English version of the podcast is available via the RSS feed on nblotti dot org slash i a daily slash en, and also on Spotify — search for Ship It with AI EN. See you tomorrow for more AI news. Have a great day."
+
+### Legacy Profile
+
+**File**: `podcast-profiles/notebook_profiles.txt`
+**Podcast name**: "Arxiv LLM Daily EN"
+**Speakers**: Alex (journalist/moderator) + Marc (field expert) + Jamie (AI/tech expert)
+**Structure**: Context setting, proposal analysis, use cases, under the hood/limitations, results, conclusion
+**Closing script**: References "Arxiv LLM Daily EN" on Spotify
+
+### How Profiles Are Used
+
+1. `sync-notebook` downloads the profile URL and parses speaker/episode profile definitions
+2. It creates or updates speaker profiles and episode profiles in Open Notebook via `/api/speaker-profiles` and `/api/episode-profiles`
+3. `generate-podcast` then uses these profiles when requesting episode generation from Open Notebook
+
+### Changing the Active Profile
+
+1. Edit `podcast-profiles/shipit_profile.txt` (or create a new file) in the `nblotti/static` repo
+2. Push to `master`
+3. If using a new file, update the `profile-url` parameter in `cron-daily-podcasts.yaml` and `workflow-template-ondemand.yaml`
+4. Run sync manually or wait for the next daily run to pick up the changes
+
 ## Workflow Parameters
 
 ### daily-arxiv-podcast (CronWorkflow)

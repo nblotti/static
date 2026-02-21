@@ -62,6 +62,26 @@ On-demand (webhook triggers):
 
 Image registry: `localhost:32000` (in-cluster MicroK8s registry).
 
+### Podcast Profiles (Open Notebook prompts)
+
+Profiles define the podcast format: speakers, dialogue structure, episode sections, and closing scripts. They live in the same `nblotti/static` repo under `podcast-profiles/` and are fetched at runtime via GitHub raw URLs.
+
+| Profile | File | Podcast name | Speakers | Used by |
+|---------|------|--------------|----------|---------|
+| **Ship It** (active) | [`podcast-profiles/shipit_profile.txt`](../../podcast-profiles/shipit_profile.txt) | "Let's Ship It with AI" | Jamie (journalist) + Marc (expert) | `daily-podcast-generation` CronWorkflow |
+| **Arxiv LLM Daily** | [`podcast-profiles/notebook_profiles.txt`](../../podcast-profiles/notebook_profiles.txt) | "Arxiv LLM Daily EN" | Alex (journalist) + Marc (field) + Jamie (AI/tech) | Legacy / alternative |
+
+The active profile is set via the `profile-url` workflow parameter:
+```
+https://raw.githubusercontent.com/nblotti/static/master/podcast-profiles/shipit_profile.txt
+```
+
+The `sync-notebook` step downloads this profile and configures Open Notebook's speaker profiles and episode profiles accordingly. Changing the podcast format means editing the profile file and pushing to the `nblotti/static` repo — the next sync will pick it up automatically.
+
+**Key differences between profiles:**
+- **shipit_profile.txt**: Two-person deep-dive format, topic-by-topic analysis (not section-by-section), practical focus. Closing script directs to "nblotti dot org" and Spotify "Ship It with AI EN".
+- **notebook_profiles.txt**: Three-person format (Alex moderator, Marc field expert, Jamie AI expert), use-case driven structure, results-focused. Closing script directs to Spotify "Arxiv LLM Daily EN".
+
 ## Debugging Workflow
 
 When investigating "podcasts aren't generating":
