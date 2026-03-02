@@ -5,53 +5,27 @@ description: Investigate, debug, and operate the Arxiv podcast generation pipeli
 
 # Arxiv Podcast Ops
 
-## How to Count Podcasts Generated
+## Podcast Counting Policy
 
-This is the ONLY correct way to count generated podcasts. You MUST follow these exact steps.
+Use this policy instead of rigid step-by-step scripts.
 
-**CRITICAL**: `daily-arxiv-podcast` is NOT a podcast. It is an article selector that produces ZERO audio. NEVER count it. NEVER list its pods as podcasts. Ignore ALL pods/workflows named `daily-arxiv-podcast-*` when answering podcast count questions.
+**CRITICAL**: `daily-arxiv-podcast-*` is selection-only (no audio upload). Never count it as podcast generation or publishing.
 
-Podcast episodes are produced by workflows named `blog-podcast-*`. Each `blog-podcast-*` workflow generates audio (MP3) for one article in one or more languages (EN, FR). Run these two commands in order:
+For user requests about uploads/publishing, separate two concepts:
 
-**Step 1** — List `blog-podcast-*` workflows:
-```bash
-kubectl get wf -n podcast --sort-by=.metadata.creationTimestamp | grep blog-podcast
-```
+1) **Attempted / planned podcasts**  
+- Source: `blog-podcast-*` workflow arguments (`selected-articles` JSON, `selected_articles[].name`).  
+- This tells what was requested to be generated, not what reached AWS.
 
-**Step 2** — Extract titles from workflow parameters (SOURCE OF TRUTH for "name"):
-```bash
-# "selected-articles" is JSON-encoded in workflow args.
-# The user-facing podcast/blog name is selected_articles[].name (NOT workflow metadata.name).
-kubectl get wf -n podcast -o json | jq -r '
-  .items[]
-  | select(.metadata.name | startswith("blog-podcast-"))
-  | . as $wf
-  | ([
-      ($wf.spec.arguments.parameters[]? | select(.name=="selected-articles") | .value | fromjson),
-      {}
-    ] | first) as $sa
-  | ($sa.selected_articles // [])[]? as $a
-  | [
-      ($wf.metadata.creationTimestamp[0:10]),
-      $wf.metadata.name,
-      ($a.name // "unknown-title"),
-      ($sa.adapter // "unknown-adapter")
-    ]
-  | @tsv
-'
-```
+2) **Actually published to AWS (source of truth for uploads)**  
+- Source: publish step evidence (`published_episodes`, `cloudfront_url`, file metadata) from `blog-podcast-*-publish` logs.  
+- Count/upload rows only when publish evidence exists.
 
-Interpretation rules (STRICT):
-- Column 1: date (UTC, `YYYY-MM-DD`)
-- Column 2: workflow id (for traceability only)
-- Column 3: **user-facing title/name** (use this for answers)
-- Column 4: adapter/destination (`mattermost` or `arxiv`)
-- NEVER report `blog-podcast-*` workflow ids as the requested "podcast name"
-
-Each output line = one published podcast episode entry with exact title + destination. Report:
-- Total episode count
-- A table with: date, title, destination, workflow id
-- How many `blog-podcast-*` workflows succeeded vs failed
+Reporting rules:
+- Always state timezone and exact time window used.
+- Always include workflow id for traceability, but never present it as the podcast name.
+- If user asks "uploaded/sent to AWS/published", prioritize publish evidence over selection metadata.
+- If publish evidence is missing/empty (for example `published_episodes: []`), classify as not uploaded.
 
 ## Quick Answers to Other Common Questions
 
