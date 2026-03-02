@@ -33,6 +33,27 @@ kubectl get eventsources,sensors,eventbus -n podcast
 kubectl get events -n podcast --sort-by='.lastTimestamp' | tail -20
 ```
 
+### Extract podcast names from workflows (do not use workflow ids as names)
+```bash
+kubectl get wf -n podcast -o json | jq -r '
+  .items[]
+  | select(.metadata.name | startswith("blog-podcast-"))
+  | . as $wf
+  | ([
+      ($wf.spec.arguments.parameters[]? | select(.name=="selected-articles") | .value | fromjson),
+      {}
+    ] | first) as $sa
+  | ($sa.selected_articles // [])[]? as $a
+  | [
+      ($wf.metadata.creationTimestamp[0:10]),
+      ($a.name // "unknown-title"),
+      ($sa.adapter // "unknown-adapter"),
+      $wf.metadata.name
+    ]
+  | @tsv
+'
+```
+
 ## Checking Candidates
 
 ### List available Arxiv candidates

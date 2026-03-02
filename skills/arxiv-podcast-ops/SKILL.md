@@ -18,16 +18,39 @@ Podcast episodes are produced by workflows named `blog-podcast-*`. Each `blog-po
 kubectl get wf -n podcast --sort-by=.metadata.creationTimestamp | grep blog-podcast
 ```
 
-**Step 2** — Extract published episode titles from their logs:
+**Step 2** — Extract titles from workflow parameters (SOURCE OF TRUTH for "name"):
 ```bash
-for pod in $(kubectl get pods -n podcast --no-headers -o custom-columns=NAME:.metadata.name | grep "blog-podcast-.*-publish"); do
-  kubectl logs -n podcast "$pod" -c main 2>&1 | grep '"episode_name"' | sed 's/.*"episode_name": "//;s/".*//'
-done
+# "selected-articles" is JSON-encoded in workflow args.
+# The user-facing podcast/blog name is selected_articles[].name (NOT workflow metadata.name).
+kubectl get wf -n podcast -o json | jq -r '
+  .items[]
+  | select(.metadata.name | startswith("blog-podcast-"))
+  | . as $wf
+  | ([
+      ($wf.spec.arguments.parameters[]? | select(.name=="selected-articles") | .value | fromjson),
+      {}
+    ] | first) as $sa
+  | ($sa.selected_articles // [])[]? as $a
+  | [
+      ($wf.metadata.creationTimestamp[0:10]),
+      $wf.metadata.name,
+      ($a.name // "unknown-title"),
+      ($sa.adapter // "unknown-adapter")
+    ]
+  | @tsv
+'
 ```
 
-Each output line = one published podcast episode. Lines ending with `(FR)` are French. Report:
+Interpretation rules (STRICT):
+- Column 1: date (UTC, `YYYY-MM-DD`)
+- Column 2: workflow id (for traceability only)
+- Column 3: **user-facing title/name** (use this for answers)
+- Column 4: adapter/destination (`mattermost` or `arxiv`)
+- NEVER report `blog-podcast-*` workflow ids as the requested "podcast name"
+
+Each output line = one published podcast episode entry with exact title + destination. Report:
 - Total episode count
-- A table with episode title and language (EN/FR)
+- A table with: date, title, destination, workflow id
 - How many `blog-podcast-*` workflows succeeded vs failed
 
 ## Quick Answers to Other Common Questions

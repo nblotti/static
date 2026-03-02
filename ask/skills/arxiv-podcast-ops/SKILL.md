@@ -22,18 +22,41 @@ kubectl get wf -n podcast --sort-by=.metadata.creationTimestamp \
 
 **IMPORTANT: If the user asks about "today", filter workflows by today's date (YYYY-MM-DD).** Only count workflows whose CREATED column starts with today's date. Do NOT count workflows from previous days.
 
-**Step 2** — Extract published episode titles from TODAY's workflows only:
+**Step 2** — Extract titles from workflow parameters (SOURCE OF TRUTH for "name"):
 ```bash
+# "selected-articles" is JSON-encoded in workflow args.
+# The user-facing podcast/blog name is selected_articles[].name (NOT workflow metadata.name).
 TODAY=$(date -u +%Y-%m-%d)
-for wf in $(kubectl get wf -n podcast -o jsonpath='{range .items[?(@.metadata.name)]}{.metadata.name}{" "}{.metadata.creationTimestamp}{"\n"}{end}' | grep "blog-podcast" | grep "$TODAY" | awk '{print $1}'); do
-  pod=$(kubectl get pods -n podcast --no-headers -o custom-columns=NAME:.metadata.name | grep "${wf}.*publish" | head -1)
-  [ -n "$pod" ] && kubectl logs -n podcast "$pod" -c main 2>&1 | grep '"episode_name"' | sed 's/.*"episode_name": "//;s/".*//'
-done
+kubectl get wf -n podcast -o json | jq -r --arg d "$TODAY" '
+  .items[]
+  | select(.metadata.name | startswith("blog-podcast-"))
+  | select(.metadata.creationTimestamp | startswith($d))
+  | . as $wf
+  | ([
+      ($wf.spec.arguments.parameters[]? | select(.name=="selected-articles") | .value | fromjson),
+      {}
+    ] | first) as $sa
+  | ($sa.selected_articles // [])[]? as $a
+  | [
+      ($wf.metadata.creationTimestamp[0:10]),
+      $wf.metadata.name,
+      ($a.name // "unknown-title"),
+      ($sa.adapter // "unknown-adapter")
+    ]
+  | @tsv
+'
 ```
 
-Each output line = one published podcast episode. Lines ending with `(FR)` are French. Report:
+Interpretation rules (STRICT):
+- Column 1: date (UTC, `YYYY-MM-DD`)
+- Column 2: workflow id (for traceability only)
+- Column 3: **user-facing title/name** (use this for answers)
+- Column 4: adapter/destination (`mattermost` or `arxiv`)
+- NEVER report `blog-podcast-*` workflow ids as the requested "podcast name"
+
+Each output line = one published podcast episode entry with exact title + destination. Report:
 - Total episode count **for the requested time period only**
-- A table with episode title and language (EN/FR)
+- A table with: date, title, destination, workflow id
 - How many `blog-podcast-*` workflows succeeded vs failed
 - If any workflow has `"published_episodes": []`, report it as a generation failure
 
