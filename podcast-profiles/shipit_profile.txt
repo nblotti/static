@@ -107,6 +107,9 @@ podcast_profile:
       description: >
         Summarize key insights and leave listeners with a
         thought-provoking takeaway.
+        Then Alex must say exactly:
+        "To finish, a quick reminder: the podcast is available on Spotify — search for Ship it with AI. See you tomorrow for more AI news. Have a great day."
+        Do not change any word in that sentence and do not generate anything after it.
 
   formatting_rules:
     dialogue_format: >

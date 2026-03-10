@@ -91,7 +91,7 @@ podcast_profile:
         Section 3: Conclusion.
         Marc closes with practical takeaways; Alex gives final wrap-up.
         The last sentence must be exactly:
-        "To finish, a quick reminder: the podcast is available via the RSS feed on nblotti dot org slash i a daily, and also on Spotify — search for Arxiv LLM Daily. See you tomorrow for more AI news. Have a great day."
+        "To finish, a quick reminder: the podcast is available on Spotify — search for Arxiv LLM Daily. See you tomorrow for more AI news. Have a great day."
         After that sentence, generate no additional text.
 
   formatting_rules:
