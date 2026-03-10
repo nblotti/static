@@ -1,159 +1,149 @@
-## Two-Person Deep-Dive (EN) — Podcast Prompt (Jamie + Marc) — Topic-by-Topic Version
-
-**Language constraint:** Generate all dialogue in **English**.
-
-**Podcast name (must be used by Jamie in the intro):** **Let’s Ship It with AI**
-
-**Roles (exactly two):**
-
-* **Jamie** (journalist/moderator, woman): curious, practical, keeps structure, summarizes in plain English.
-* **Marc** (expert, man): technical but accessible, explains concepts, connects to real-world usage and tradeoffs.
-
-**Conversation rules:**
-
-1. **Jamie must always call Marc by name** when handing over or asking follow-ups (“Marc, …”).
-2. Jamie lets Marc finish, then **briefly rephrases** what he said in everyday English, then continues.
-3. **Do not do paragraph-by-paragraph or section-by-section walkthroughs.** Extract the **main thesis** and then analyze **topic-by-topic**.
-4. **Only mention information that exists in the source.** Do **not** mention absent details, missing references, or uncertainties about what isn’t provided.
-5. Keep it podcast-like: lively, precise, no fluff, not overly formal.
-
----
-
-# Episode Structure (must follow this order)
-
-## 0) Podcast intro + source reference (brief)
-
-**Jamie**
-
-* Must include:
-
-  * “Hello and welcome to **Let’s Ship It with AI**.”
-* Then (briefly) state only what is present in the source:
-
-  1. **Source reference**: title + author/org (if present) + where published + date/version (if present)
-  2. **One-line claim**: one sentence on what the document proposes/claims
-  3. Ask Marc by name:
-     “Concretely, what’s the use of what they’re proposing, and what need does it meet today?”
-
-**Marc**
-
-* Answer: what need this meets, who it’s for, what pain it reduces.
-
-**Jamie**
-
-* Rephrase in plain English.
-* Then ask Marc by name: “What changed recently that makes this kind of idea show up now?”
-
-**Marc**
-
-* Explain why this is appearing now (capabilities, cost curves, tooling, regulation, market pressure, community trends, etc.).
-
----
-
-## 2) One-paragraph overview (executive summary)
-
-**Jamie**
-
-* Ask Marc by name: “Give us the whole thing in 30–60 seconds.”
-
-**Marc**
-
-* Crisp overview: **inputs → core idea → outputs → why it matters**.
-
-**Jamie**
-
-* Translate into everyday language and identify:
-
-  * what’s new,
-  * what’s borrowed,
-  * what the practical promise is.
-
----
-
-## 3) Topic-by-topic deep dive (no section-by-section)
-
-**Jamie**
-
-* Must say exactly: **“Now let’s do this topic by topic”**
-* Then: “Marc, what are the main topics this document covers?”
-* Jamie and Marc **extract 4–8 short topic titles from the document**.
-* They cover the topics **one by one**, in a logical order for understanding and applying the idea.
-
-### Simplified topic loop (repeat for each extracted topic)
-
-**Jamie**
-
-* “Topic [#]: **[TOPIC NAME]**.”
-* “Marc, explain this topic as the document presents it.”
-
-**Marc**
-
-* Explain the topic **as presented in the document**, sticking closely to the source:
-
-  * what the document is saying about this topic,
-  * the main point or claim the document makes here,
-  * any mechanism/process the document describes for it (only if mentioned),
-  * what the document highlights as consequences or implications (only if mentioned).
-
-**Jamie**
-
-* **Brief rephrase in everyday English.**
-* Then ask Marc by name **one practical follow-up that transitions to the next topic**, e.g.:
-
-  * “Marc, how does that connect to **[NEXT TOPIC]**?”
-  * “Marc, what should we keep in mind as we move to **[NEXT TOPIC]**?”
-  * “Marc, what’s the bridge from this to **[NEXT TOPIC]**?”
-
-**Marc**
-
-* Answer briefly, then transition into the next topic.
-
-### Constraints for Section 3
-
-* Do **not** follow the document’s headings or paragraphs.
-* Do **not** use a predefined list of topics.
-* Only discuss topics that are actually present in the source.
-* Keep the pace: each topic is a tight segment, not a lecture.
-
----
-
-## 6) Practical implications: what to do with it now
-
-**Jamie**
-
-* Ask Marc by name: **“Marc, what should a team do with this right now — should they take it into account, and if so how?”**
-
-**Marc**
-
-* Answer in practical terms, staying consistent with what the source proposes:
-
-  * what the document invites teams to *change* (if anything),
-  * what it invites teams to *consider* (a new framing, risk, approach, metric, capability),
-  * what a sensible “next action” looks like (e.g., share internally, add to roadmap watchlist, run a small experiment, update guidance, or ignore for now).
-
-**Jamie**
-
-* **Brief rephrase in everyday English.**
-* Then ask Marc by name: **“Marc, is there any real implication for teams out there, or is it more an informational document/blog?”**
-
-**Marc**
-
-* Answer directly, grounded in what the document is doing, and what that means for whether teams should act now or just file it away.
-
----
-
-## 7) Conclusion
-
-**Marc**
-
-* One closing remark: who benefits most, under what conditions, and biggest caveat.
-
-**Jamie**
-
-* Final one-sentence summary of what the document really brings.
-
-**IMPORTANT (verbatim, no changes):** After Jamie’s conclusion, she must say exactly:
-
-> "To finish, a quick reminder: the English version of the podcast is available via the RSS feed on nblotti dot org slash i a daily slash en, and also on Spotify — search for Ship It with AI EN. See you tomorrow for more AI news. Have a great day."
-
-**Hard stop:** Do not generate anything after that sentence.
+speaker_profiles:
+
+  - id: host
+    name: Alex
+    role: Host / Moderator
+    voice_model: openai/tts-1-hd
+    voice_id: nova
+
+    backstory: >
+      A professional technology journalist and podcast host who specializes
+      in translating complex technical ideas into accessible conversations.
+
+    personality: >
+      Curious, articulate, and structured. Guides the discussion, summarizes
+      key points, and asks clarifying questions that help the audience follow
+      complex ideas.
+
+    responsibilities:
+      - Introduce the episode topic
+      - Frame the problem being discussed
+      - Manage transitions between speakers
+      - Rephrase technical explanations in simpler language
+      - Maintain pacing and narrative flow
+
+  - id: practitioner
+    name: Marc
+    role: Industry Practitioner
+    voice_model: openai/tts-1-hd
+    voice_id: echo
+
+    backstory: >
+      A senior engineer and systems architect who has worked on large-scale
+      production systems. Focuses on practical implications and real-world
+      deployment concerns.
+
+    personality: >
+      Pragmatic, grounded, and focused on operational realities. Often brings
+      concrete examples, trade-offs, and lessons learned from industry.
+
+    responsibilities:
+      - Translate theory into practical implications
+      - Provide real-world engineering context
+      - Discuss scalability, reliability, and operational impact
+      - Challenge overly theoretical assumptions
+
+  - id: researcher
+    name: Jamie
+    role: Research Specialist
+    voice_model: openai/tts-1-hd
+    voice_id: alloy
+
+    backstory: >
+      A researcher specializing in machine learning and computational systems,
+      experienced in analyzing academic papers and explaining technical
+      methodologies.
+
+    personality: >
+      Analytical, enthusiastic about technical depth, and comfortable
+      dissecting methodology, experiments, and limitations.
+
+    responsibilities:
+      - Explain research methods and concepts
+      - Break down experimental design and metrics
+      - Compare approaches and prior work
+      - Highlight limitations and open questions
+
+podcast_profile:
+
+  id: research_discussion
+  language: English
+
+  outline_model: openai/gpt-5-mini
+  transcript_model: openai/gpt-5-mini
+
+  speaker_profile: host_practitioner_researcher
+
+  segments: 5
+
+  description: >
+    A conversational podcast that analyzes technical ideas, research papers,
+    engineering practices, or emerging technologies. The discussion balances
+    conceptual explanations with practical implications.
+
+  generation_rules:
+
+    dialogue_style: >
+      Natural spoken conversation between three participants.
+      Avoid long uninterrupted monologues. Speakers should
+      alternate frequently and react to each other's ideas.
+
+    host_behavior:
+      - Introduce the topic clearly
+      - Guide transitions between speakers
+      - Summarize complex explanations
+      - Ask follow-up questions to deepen discussion
+
+    expert_behavior:
+      - Provide detailed explanations
+      - Build on each other’s comments
+      - Occasionally challenge or refine interpretations
+      - Use examples and analogies
+
+    pacing:
+      - Maintain steady conversational rhythm
+      - Mix technical depth with accessible explanation
+      - Alternate between explanation, discussion, and reflection
+
+  episode_structure:
+
+    - segment: introduction
+      description: >
+        The host introduces the topic and explains why it matters.
+        The discussion establishes the central question or problem.
+
+    - segment: background
+      description: >
+        Participants explain the context: prior work, current industry
+        practices, or the broader landscape surrounding the topic.
+
+    - segment: core_analysis
+      description: >
+        Deep dive into the main ideas, methodology, or technical
+        innovations being discussed.
+
+    - segment: implications
+      description: >
+        Discussion of real-world impact, limitations, trade-offs,
+        and how the ideas could influence future systems.
+
+    - segment: closing_reflection
+      description: >
+        Summarize key insights and leave listeners with a
+        thought-provoking takeaway.
+
+  formatting_rules:
+
+    dialogue_format: >
+      Each line must begin with the speaker name followed by a colon.
+
+      Example:
+      Alex: Opening or question
+      Jamie: Technical explanation
+      Marc: Practical perspective
+
+    style_guidelines:
+      - Write as spoken conversation, not narration
+      - Use clear explanations and occasional analogies
+      - Maintain a balanced exchange between speakers
+      - Avoid filler phrases or excessive repetition
