@@ -1,138 +1,125 @@
-(Instruction for the LLM: generate all dialogue in **English**. Alex is the journalist/moderator. Alex must call the experts **by name** when handing over or asking follow-ups. Alex should let an expert finish, briefly rephrase, then ask the other expert — or the same expert if needed.)
+speaker_profiles:
+  - id: host
+    name: Alex
+    role: Host / Moderator
+    voice_model: openai/tts-1-hd
+    voice_id: nova
+    backstory: >
+      Journalist and moderator for the daily arXiv podcast.
+    personality: >
+      Clear, structured, and audience-focused; summarizes and transitions.
+    responsibilities:
+      - Introduce the paper and set context
+      - Call experts by name when handing over
+      - Rephrase technical points in everyday language
+      - Maintain pacing and segment order
 
----
+  - id: practitioner
+    name: Marc
+    role: Industry Practitioner
+    voice_model: openai/tts-1-hd
+    voice_id: echo
+    backstory: >
+      Field and real-world deployment perspective.
+    personality: >
+      Pragmatic and grounded in operational constraints.
+    responsibilities:
+      - Explain practical impact and deployment implications
+      - Highlight trade-offs and constraints
+      - Ground conclusions in realistic usage
 
-### 1. Context setting + reference for the paper
+  - id: researcher
+    name: Jamie
+    role: Research Specialist
+    voice_model: openai/tts-1-hd
+    voice_id: alloy
+    backstory: >
+      AI and technical research perspective.
+    personality: >
+      Analytical and precise, focused on methods and evidence.
+    responsibilities:
+      - Explain the contribution and technical mechanics
+      - Analyze assumptions, metrics, and comparisons
+      - Surface limitations and future work
 
-**Alex**
+podcast_profile:
+  id: arxiv_discussion
+  language: English
+  outline_model: openai/gpt-5-mini
+  transcript_model: openai/gpt-5-mini
+  speaker_profile: host_practitioner_researcher
+  segments: 3
+  description: >
+    Daily arXiv paper discussion balancing technical analysis and practical impact.
 
-Podcast-style intro. For example:
+  generation_rules:
+    dialogue_style: |
+      Alex is the journalist/moderator.
+      Alex must call the experts by name when handing over or asking follow-ups.
+      Alex should let an expert finish, briefly rephrase, then ask the other expert — or the same expert if needed.
+      Keep the conversation podcast-like: lively, precise, and practical.
+      Only mention information that exists in the source.
+    host_behavior:
+      - Start with title and paper reference context
+      - Explain why the paper matters now
+      - Hand over by name and keep clear transitions
+      - Rephrase technical details into plain language
+      - After the conclusion, say the final closing sentence exactly and stop
+    expert_behavior:
+      - Jamie describes contribution, technical method, assumptions, and reported evidence
+      - Marc maps findings to practical usage and field constraints
+      - Avoid unsupported speculation and invented details
+    pacing:
+      - Keep segment flow tight and conversational
+      - Alternate explanation and practical interpretation
+      - Avoid filler and repetition
 
-* “Hello and welcome to **Arxiv LLM Daily EN**.”
-* “This is the show where we look at a new arXiv paper every day and try to keep up with the ridiculous speed of AI innovation — but in a way that stays practical.”
-* “Today we’re going to dig into a paper and see what it actually changes for people building or using AI.”
+  episode_structure:
+    - segment: context_setting_and_reference
+      description: |
+        Alex opens podcast-style and includes:
+        - "Hello and welcome to Arxiv LLM Daily EN."
+        - brief framing of why this paper is being discussed now.
+        Then:
+        1) give paper reference (title and optionally date/version),
+        2) explain what the paper proposes,
+        3) present the two angles by name:
+           - Marc: field / real-world usage
+           - Jamie: AI / technical side
+        4) ask:
+           "Concretely, what's the use of what they're proposing, and what need does it meet today?"
+        Handover by name:
+        - Marc first on real need
+        - Alex rephrases and asks Jamie why this appears now.
+    - segment: technical_and_practical_analysis
+      description: |
+        Jamie explains the contribution: what it is, where it plugs in, what it is for,
+        and how it compares to previous approaches.
+        Alex rephrases in everyday English and calls Marc.
+        Marc explains what this changes in actual usage.
+        Continue in this segment with:
+        - practical use cases,
+        - under-the-hood assumptions and limitations,
+        - reported results and benchmark interpretation.
+        Alex keeps thread and handovers by name.
+    - segment: conclusion
+      description: |
+        Marc gives closing remark: who benefits most and under what conditions.
+        Alex gives one-sentence conclusion of what the paper really brings.
+        Then Alex must say exactly:
+        "To finish, a quick reminder: the English version of the podcast is available via the RSS feed on nblotti dot org slash i a daily slash en, and also on Spotify — search for Arxiv LLM Daily EN. See you tomorrow for more AI news. Have a great day."
+        Do not change any word in that sentence and do not generate anything after it.
 
-Then:
+  formatting_rules:
+    dialogue_format: >
+      Each line must begin with the speaker name followed by a colon.
 
-1. Give the reference:
-
-   * Title of the paper
-   * (optionally) date / version
-   * e.g. “The paper we’re looking at today is…”
-2. Explain why we’re talking about it now: “this paper proposes…”
-3. Present the two angles, **by name**:
-
-   * “Marc will look at it from the field, real-world usage.”
-   * “Jamie will look at the AI / technical side.”
-4. Value question:
-
-   > “Concretely, what’s the use of what they’re proposing, and what need does it meet today?”
-
-Then hand over **by name**:
-
-* “Marc, let’s start with what need you’re actually seeing on the ground.”
-* After Marc speaks, Alex rephrases and calls Jamie: “Jamie, from the AI side, why is this kind of approach showing up now?”
-
-**Marc**
-
-* Describe the real need it could address.
-
-**Jamie**
-
-* Reframe from the AI side (why this approach is appearing now).
-
----
-
-### 2. What is the paper actually proposing?
-
-**Jamie**
-
-* Describe the contribution: what it is, where it plugs in, what it’s for.
-* Position it compared to what was done before.
-
-**Alex**
-
-* Rephrase in everyday English.
-* Then call **Marc** by name.
-
-**Marc**
-
-* Say what it would change in actual usage.
-
----
-
-### 3. Use cases (practical projection of the paper)
-
-**Alex**
-
-* Transition: “If we applied it in a real team, Marc, what would it look like?”
-
-**Use case 1 – simple**
-
-* **Marc** gives a very operational case.
-
-(After Marc, Alex rephrases and sets up the second case.)
-
-**Use case 2 – more advanced**
-
-* **Marc** describes, **Jamie** connects it to the mechanics of the paper.
-
-**Alex**
-
-* Keeps the thread and hands speaking time back around **by name**.
-
----
-
-### 4. Under the hood / limitations (according to the paper)
-
-**Jamie**
-
-* Explain prerequisites, assumptions, technical constraints, limitations mentioned by the authors.
-* Possible future work.
-
-**Alex**
-
-* Translate that into simple terms.
-* Then call **Marc** by name.
-
-**Marc**
-
-* Add the setup / org part.
-
----
-
-### 5. Results mentioned in the arXiv paper
-
-**Jamie**
-
-* Recap the reported results:
-
-  * benchmarks / datasets,
-  * metrics (EM, F1, faithfulness, cost, latency…),
-  * comparison to baselines.
-* Specify if the setting is very controlled.
-
-**Alex**
-
-* Translate these numbers into understandable benefits.
-* Then call **Marc** by name.
-
-**Marc**
-
-* Say what we can expect in a real environment (often a bit worse).
-
----
-
-### 6. Conclusion
-
-**Marc**
-
-* Closing remark from the field: who benefits the most / under what conditions.
-
-**Alex**
-
-* Final conclusion: what the paper really brings in one sentence
-
-The output must be the complete dialogue in **English**, respecting the order, the roles, and the names.
-
-**IMPORTANT: after Alex’s conclusion, have her say: "To finish, a quick reminder: the English version of the podcast is available via the RSS feed on nblotti dot org slash i a daily slash en, and also on Spotify — search for Arxiv LLM Daily EN. See you tomorrow for more AI news. Have a great day." Do not ever change any word in that last sentence (no adding https to the url) and do not generate anything else after it.**
+      Example:
+      Alex: Opening or question
+      Jamie: Technical explanation
+      Marc: Practical perspective
+    style_guidelines:
+      - Output must be complete dialogue
+      - Respect speaker roles and handovers by name
+      - Ground statements in source content
+      - Do not invent missing details
