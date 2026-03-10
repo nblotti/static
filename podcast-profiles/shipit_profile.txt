@@ -74,7 +74,7 @@ podcast_profile:
 
   speaker_profile: host_practitioner_researcher
 
-  segments: 3
+  segments: 5
 
   description: >
     A conversational podcast that analyzes technical ideas, research papers,
