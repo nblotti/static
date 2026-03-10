@@ -72,7 +72,7 @@ podcast_profile:
   outline_model: openai/gpt-5-mini
   transcript_model: openai/gpt-5-mini
 
-  speaker_profile: tech_experts_en
+  speaker_profile: host_practitioner_researcher
 
   segments: 3
 
