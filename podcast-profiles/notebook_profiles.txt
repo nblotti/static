@@ -1,125 +1,105 @@
 speaker_profiles:
   - id: host
     name: Alex
-    role: Host / Moderator
+    role: Journalist / Moderator
     voice_model: openai/tts-1-hd
     voice_id: nova
     backstory: >
-      Journalist and moderator for the daily arXiv podcast.
+      Moderator of Arxiv LLM Daily. Explains research clearly and keeps the discussion accessible.
     personality: >
-      Clear, structured, and audience-focused; summarizes and transitions.
+      Calm, structured, and concise. Summarizes clearly and manages transitions.
     responsibilities:
-      - Introduce the paper and set context
-      - Call experts by name when handing over
-      - Rephrase technical points in everyday language
-      - Maintain pacing and segment order
+      - Introduce the topic and reference the paper
+      - Keep the dialogue flow clear and structured
+      - Briefly summarize previous speaker points
+      - Translate technical ideas into simple language
+      - Hand over by explicitly calling Marc or Jamie by name
+      - Do not introduce new technical explanations
 
   - id: practitioner
     name: Marc
-    role: Industry Practitioner
+    role: Field / Operational Expert
     voice_model: openai/tts-1-hd
     voice_id: echo
     backstory: >
-      Field and real-world deployment perspective.
+      Practitioner focused on deployment and operations for production AI systems.
     personality: >
-      Pragmatic and grounded in operational constraints.
+      Grounded, practical, and explicit about constraints.
     responsibilities:
-      - Explain practical impact and deployment implications
-      - Highlight trade-offs and constraints
-      - Ground conclusions in realistic usage
+      - Discuss real-world deployment and product workflows
+      - Explain operational constraints and engineering integration
+      - Cover procurement decisions, SLAs, and reliability
+      - Describe who can adopt the approach in practice
+      - Must not explain model architecture or research methodology
 
   - id: researcher
     name: Jamie
-    role: Research Specialist
+    role: AI / Technical Expert
     voice_model: openai/tts-1-hd
     voice_id: alloy
     backstory: >
-      AI and technical research perspective.
+      Research-focused speaker who explains methods, evidence, and technical context.
     personality: >
-      Analytical and precise, focused on methods and evidence.
+      Precise, analytical, and clear without jargon overload.
     responsibilities:
-      - Explain the contribution and technical mechanics
-      - Analyze assumptions, metrics, and comparisons
-      - Surface limitations and future work
+      - Explain the technical method proposed by the paper
+      - Provide research context and comparisons with prior work
+      - Cover benchmarks, datasets, metrics, and technical limitations
+      - Highlight open research challenges
+      - Must not discuss procurement or internal company organization
 
 podcast_profile:
   id: arxiv_discussion
-  language: English
   outline_model: openai/gpt-5-mini
   transcript_model: openai/gpt-5-mini
   speaker_profile: host_practitioner_researcher
   segments: 3
   description: >
-    Daily arXiv paper discussion balancing technical analysis and practical impact.
+    AI paper dialogue with one moderator, one operations expert, and one technical expert.
 
   generation_rules:
     dialogue_style: |
-      Alex is the journalist/moderator.
-      Alex must call the experts by name when handing over or asking follow-ups.
-      Alex should let an expert finish, briefly rephrase, then ask the other expert — or the same expert if needed.
-      Keep the conversation podcast-like: lively, precise, and practical.
-      Only mention information that exists in the source.
-    host_behavior:
-      - Start with title and paper reference context
-      - Explain why the paper matters now
-      - Hand over by name and keep clear transitions
-      - Rephrase technical details into plain language
-      - After the conclusion, say the final closing sentence exactly and stop
+      Generate a podcast dialogue about an AI research paper.
+      Output must be dialogue only.
+      Do not add narration or stage directions.
+      Keep each speaker turn to 2-4 sentences maximum.
+      Keep tone calm and professional.
+      Avoid long paragraphs and repeated explanations.
     expert_behavior:
-      - Jamie describes contribution, technical method, assumptions, and reported evidence
-      - Marc maps findings to practical usage and field constraints
+      - Follow speaker responsibilities from speaker_profiles strictly
       - Avoid unsupported speculation and invented details
-    pacing:
-      - Keep segment flow tight and conversational
-      - Alternate explanation and practical interpretation
-      - Avoid filler and repetition
+    analysis_requirements:
+      - Explain the problem the paper tries to solve
+      - Explain what is technically new
+      - Situate the paper in a broader research trend
+      - Explain how the method can be used in practice
+      - Explain what remains unsolved
+      - Explain who should realistically care
 
   episode_structure:
-    - segment: context_setting_and_reference
+    - segment: context_setting_and_paper_reference
       description: |
-        Alex opens podcast-style and includes:
-        - "Hello and welcome to Arxiv LLM Daily EN."
-        - brief framing of why this paper is being discussed now.
-        Then:
-        1) give paper reference (title and optionally date/version),
-        2) explain what the paper proposes,
-        3) present the two angles by name:
-           - Marc: field / real-world usage
-           - Jamie: AI / technical side
-        4) ask:
-           "Concretely, what's the use of what they're proposing, and what need does it meet today?"
-        Handover by name:
-        - Marc first on real need
-        - Alex rephrases and asks Jamie why this appears now.
+        Section 1: Context setting + paper reference.
+        Alex introduces the paper and opens the conversation by name.
     - segment: technical_and_practical_analysis
       description: |
-        Jamie explains the contribution: what it is, where it plugs in, what it is for,
-        and how it compares to previous approaches.
-        Alex rephrases in everyday English and calls Marc.
-        Marc explains what this changes in actual usage.
-        Continue in this segment with:
-        - practical use cases,
-        - under-the-hood assumptions and limitations,
-        - reported results and benchmark interpretation.
-        Alex keeps thread and handovers by name.
+        Section 2: Technical + practical analysis.
+        Jamie explains method and novelty; Alex summarizes and hands to Marc by name.
+        Continue in this section with use cases, limitations, and results interpretation.
     - segment: conclusion
       description: |
-        Marc gives closing remark: who benefits most and under what conditions.
-        Alex gives one-sentence conclusion of what the paper really brings.
-        Then Alex must say exactly:
-        "To finish, a quick reminder: the English version of the podcast is available via the RSS feed on nblotti dot org slash i a daily slash en, and also on Spotify — search for Arxiv LLM Daily EN. See you tomorrow for more AI news. Have a great day."
-        Do not change any word in that sentence and do not generate anything after it.
+        Section 3: Conclusion.
+        Marc closes with practical takeaways; Alex gives final wrap-up.
+        The last sentence must be exactly:
+        "To finish, a quick reminder: the podcast is available via the RSS feed on nblotti dot org slash i a daily, and also on Spotify — search for Arxiv LLM Daily. See you tomorrow for more AI news. Have a great day."
+        After that sentence, generate no additional text.
 
   formatting_rules:
     dialogue_format: >
-      Each line must begin with the speaker name followed by a colon.
-
-      Example:
-      Alex: Opening or question
-      Jamie: Technical explanation
-      Marc: Practical perspective
+      Dialogue only. Each line starts with Alex:, Marc:, or Jamie:.
     style_guidelines:
-      - Output must be complete dialogue
-      - Respect speaker roles and handovers by name
-      - Ground statements in source content
+      - Keep each turn to 2-4 sentences
+      - Respect role boundaries from speaker_profiles
+      - Follow all three sections in exact order
+      - Keep technical claims grounded in source material
       - Do not invent missing details
